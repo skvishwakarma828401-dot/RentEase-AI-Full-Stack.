@@ -24,14 +24,8 @@
       <h2 style="text-align: center; margin: 0 0 8px;">Admin Portal Login</h2>
       <p style="text-align: center; color: var(--muted); font-size: 13.5px; margin-bottom: 24px;">Restricted to store managers & administrators.</p>
 
-      <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 12.5px; color: #475569;">
-        <strong>Demo Admin Credentials:</strong><br>
-        Email: <code>admin@rentease.com</code><br>
-        Password: <code>admin123</code>
-      </div>
-
-      <input id="loginAdminEmail" type="email" placeholder="Admin Email" value="admin@rentease.com" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px;" />
-      <input id="loginAdminPassword" type="password" placeholder="Password" value="admin123" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 10px;" />
+      <input id="loginAdminEmail" type="email" placeholder="Admin Email Address" autocomplete="email" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px;" />
+      <input id="loginAdminPassword" type="password" placeholder="Password" autocomplete="current-password" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 10px;" />
       <button class="primary full" onclick="submitAdminLogin()">Login as Administrator</button>
       <p id="adminLoginError" style="color: #ef4444; font-size: 13px; margin-top: 12px; text-align: center;"></p>
     </div>
