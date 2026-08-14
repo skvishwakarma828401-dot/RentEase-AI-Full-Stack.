@@ -353,9 +353,223 @@ function changeHeroSlide(direction) {
   goToHeroSlide(currentHeroSlide + direction);
 }
 
+/* ==========================================================================
+   Dynamic Indian Festival & Seasonal Live Sale Engine with Countdown Timer
+   ========================================================================== */
+const INDIAN_FESTIVALS = {
+  diwali: {
+    badge: "🪔 SHUBH DEEPAVALI SALE",
+    subtag: "Grand Indian Festive Bonanza",
+    title: "Diwali Mega Furniture Dhamaka Live! 🪔",
+    subtitle: "Light up your home with luxury sofas & beds • Extra 20% OFF",
+    coupon: "DIWALI20",
+    daysEnd: 3
+  },
+  durga_puja: {
+    badge: "🏮 DURGA PUJA & NAVRATRI",
+    subtag: "Pujo Special Home Celebration",
+    title: "Durga Puja & Navratri Mahotsav Sale! 🏮",
+    subtitle: "Celebrate with joyful home makeovers • Up to 55% OFF all categories",
+    coupon: "PUJO55",
+    daysEnd: 4
+  },
+  independence: {
+    badge: "🇮🇳 GREAT FREEDOM SALE",
+    subtag: "August Independence Special",
+    title: "Great Freedom Furniture Sale Live! 🇮🇳",
+    subtitle: "Enjoy freedom from high furniture costs with zero deposit & 48h delivery",
+    coupon: "FREEDOM15",
+    daysEnd: 2
+  },
+  ganesh: {
+    badge: "🐘 GANESH UTSAV SALE",
+    subtag: "Bappa Special Festive Deals",
+    title: "Ganesh Chaturthi Home Bonanza! 🐘",
+    subtitle: "Welcome prosperity with new living & dining sets • Extra 25% OFF",
+    coupon: "BAPPA25",
+    daysEnd: 5
+  },
+  holi: {
+    badge: "🎨 HOLI COLORS OF JOY",
+    subtag: "Spring Festival Celebration",
+    title: "Holi Colors of Joy Furniture Sale! 🎨",
+    subtitle: "Add vibrant colors to your home with designer recliners & velvet sofas",
+    coupon: "HOLIJOY",
+    daysEnd: 3
+  },
+  republic: {
+    badge: "🇮🇳 REPUBLIC DAY SALE",
+    subtag: "National Celebration Offers",
+    title: "Mega Republic Day Furniture Sale! 🇮🇳",
+    subtitle: "Unbeatable prices on work from home desks & ergonomic chairs",
+    coupon: "REPUBLIC26",
+    daysEnd: 2
+  },
+  year_end: {
+    badge: "❄️ YEAR-END CLEARANCE",
+    subtag: "End of Season Super Saver",
+    title: "Year-End Mega Clearance Sale Live! ❄️",
+    subtitle: "Biggest furniture price drops of the year • Grab your favourites before 2027",
+    coupon: "YEAREND30",
+    daysEnd: 4
+  },
+  new_year: {
+    badge: "🎉 NEW YEAR 2027 KICKOFF",
+    subtag: "Fresh Home, Fresh Beginning",
+    title: "Happy New Year Furniture Sale Live! 🎉",
+    subtitle: "Upgrade your living space with smart rental plans starting at ₹499/mo",
+    coupon: "NEWYEAR20",
+    daysEnd: 6
+  },
+  weekend: {
+    badge: "⚡ WEEKEND FLASH SALE",
+    subtag: "Limited Time Weekend Savings",
+    title: "Weekend Super Sale Live! ⚡",
+    subtitle: "Grab your favourites before they're gone • Sale ends Sunday midnight",
+    coupon: "WEEKEND15",
+    daysEnd: 2
+  },
+  midweek: {
+    badge: "🛋️ SUPER SAVER SALE",
+    subtag: "Midweek Home Makeover Deals",
+    title: "Super Saver Furniture Sale Live! 🛋️",
+    subtitle: "Top rated sofas, beds, and study desks at special rental discounts",
+    coupon: "SAVER10",
+    daysEnd: 3
+  }
+};
+
+let activeFestivalKey = "auto";
+let countdownEndTime = null;
+let countdownTimerInterval = null;
+
+function detectCurrentIndianFestival() {
+  const now = new Date();
+  const month = now.getMonth(); // 0 = Jan, 1 = Feb, ..., 11 = Dec
+  const date = now.getDate();
+  const day = now.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+
+  // August: Independence Day / Ganesh Chaturthi
+  if (month === 7) {
+    if (date <= 20) return "independence";
+    return "ganesh";
+  }
+  // September: Ganesh Utsav / Durga Puja
+  if (month === 8) {
+    if (date <= 15) return "ganesh";
+    return "durga_puja";
+  }
+  // October: Durga Puja / Navratri / Diwali
+  if (month === 9) {
+    if (date <= 18) return "durga_puja";
+    return "diwali";
+  }
+  // November: Diwali / Post-Diwali
+  if (month === 10) {
+    if (date <= 15) return "diwali";
+    return "midweek";
+  }
+  // December: Year-End Mega Clearance
+  if (month === 11) {
+    return "year_end";
+  }
+  // January: New Year / Republic Day
+  if (month === 0) {
+    if (date <= 15) return "new_year";
+    return "republic";
+  }
+  // March: Holi
+  if (month === 2) {
+    return "holi";
+  }
+  // Weekend check (Fri, Sat, Sun)
+  if (day === 0 || day === 5 || day === 6) {
+    return "weekend";
+  }
+
+  return "midweek";
+}
+
+function renderFestivalBanner(key) {
+  const actualKey = (key === "auto") ? detectCurrentIndianFestival() : key;
+  const fest = INDIAN_FESTIVALS[actualKey] || INDIAN_FESTIVALS.weekend;
+
+  const badgeEl = document.getElementById("festBadge");
+  const subtagEl = document.getElementById("festSubtag");
+  const titleEl = document.getElementById("festTitle");
+  const subtitleEl = document.getElementById("festSubtitle");
+  const couponEl = document.getElementById("festCoupon");
+
+  if (badgeEl) badgeEl.textContent = fest.badge;
+  if (subtagEl) subtagEl.textContent = fest.subtag;
+  if (titleEl) titleEl.textContent = fest.title;
+  if (subtitleEl) subtitleEl.textContent = fest.subtitle;
+  if (couponEl) couponEl.textContent = fest.coupon;
+
+  // Set countdown end date (e.g. 2 days, 10 hours from now)
+  const now = new Date();
+  countdownEndTime = new Date(now.getTime() + (fest.daysEnd * 24 * 60 * 60 * 1000) + (10 * 60 * 60 * 1000) + (9 * 60 * 1000) + (20 * 1000));
+
+  startCountdownClock();
+}
+
+function manualSwitchFestival(val) {
+  activeFestivalKey = val;
+  renderFestivalBanner(val);
+}
+
+function startCountdownClock() {
+  if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+
+  function tick() {
+    if (!countdownEndTime) return;
+    const now = new Date();
+    const diff = Math.max(0, countdownEndTime.getTime() - now.getTime());
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const dEl = document.getElementById("cdDays");
+    const hEl = document.getElementById("cdHours");
+    const mEl = document.getElementById("cdMinutes");
+    const sEl = document.getElementById("cdSeconds");
+
+    if (dEl) dEl.textContent = String(days).padStart(2, "0");
+    if (hEl) hEl.textContent = String(hours).padStart(2, "0");
+    if (mEl) mEl.textContent = String(minutes).padStart(2, "0");
+    if (sEl) sEl.textContent = String(seconds).padStart(2, "0");
+  }
+
+  tick();
+  countdownTimerInterval = setInterval(tick, 1000);
+}
+
+function copyCouponCode() {
+  const coupon = document.getElementById("festCoupon")?.textContent || "FESTIVE15";
+  navigator.clipboard.writeText(coupon).then(() => {
+    const btn = document.getElementById("copyBtn");
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = "✓ COPIED!";
+      btn.style.background = "#166534";
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = "#2563eb";
+      }, 2000);
+    }
+    showToast(`Coupon "${coupon}" copied! Extra discount applied at checkout 🎁`);
+  }).catch(() => {
+    showToast(`Promo Code: ${coupon}`);
+  });
+}
+
 loadProducts();
 updateCartCount();
 updateWishlistCount();
 updateUserStatus();
 initHeroSlider();
+renderFestivalBanner("auto");
+
 

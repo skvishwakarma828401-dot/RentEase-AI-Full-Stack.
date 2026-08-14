@@ -1934,6 +1934,237 @@ button, a { cursor: pointer; }
   .slider-arrow { display: none; }
 }
 
+/* ==========================================================================
+   Dynamic Indian Festival & Seasonal Sale Live Countdown Banner
+   ========================================================================== */
+.festival-sale-banner {
+  max-width: 1400px;
+  margin: 35px auto 20px;
+  padding: 0 8vw;
+}
+
+.festival-banner-inner {
+  background: #ffffff;
+  background-image: radial-gradient(at 100% 0%, rgba(254, 243, 199, 0.6) 0px, transparent 50%),
+                    radial-gradient(at 0% 100%, rgba(254, 226, 226, 0.4) 0px, transparent 50%);
+  border: 1.5px solid #fde68a;
+  border-radius: 24px;
+  padding: 26px 36px;
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.festival-info {
+  flex: 1.2;
+  min-width: 280px;
+}
+
+.festival-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.live-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #dc2626;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  animation: liveDotPulse 1.8s infinite;
+}
+
+@keyframes liveDotPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.festival-badge {
+  font-size: 11px;
+  font-weight: 900;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.festival-subtag {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.festival-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #dc2626;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.festival-subtitle {
+  font-size: 14.5px;
+  color: #334155;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Coupon Code Box */
+.festival-coupon-box {
+  background: #fff;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 12px 18px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.coupon-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.coupon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.coupon-chip:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.coupon-code {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 1px;
+}
+
+.coupon-copy-btn {
+  background: #2563eb;
+  color: white;
+  border: 0;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.coupon-terms {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Right: Sales Ends In Live Countdown Timer */
+.festival-timer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timer-headline {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.countdown-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.count-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.count-num {
+  width: 48px;
+  height: 48px;
+  background: #dc2626;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.count-unit {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  margin-top: 4px;
+}
+
+/* Festival Switcher Bar */
+.festival-switcher-bar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.festival-switcher-bar select {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .festival-banner-inner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    padding: 24px;
+  }
+  .festival-tag-row { justify-content: center; }
+  .festival-timer-box { margin-top: 10px; }
+  .festival-switcher-bar { justify-content: center; }
+}
+
+
 
 
 

@@ -246,6 +246,72 @@
     </div>
   </section>
 
+  <!-- Dynamic Indian Festival & Seasonal Live Sale Banner with Countdown -->
+  <section class="festival-sale-banner" id="festivalSaleBanner">
+    <div class="festival-banner-inner">
+      <!-- Left: Title, Tag & Subtitle -->
+      <div class="festival-info">
+        <div class="festival-tag-row">
+          <span class="live-pulse-dot"></span>
+          <span class="festival-badge" id="festBadge">🔥 LIVE FESTIVAL SALE</span>
+          <span class="festival-subtag" id="festSubtag">Special Seasonal Offer</span>
+        </div>
+        <h2 class="festival-title" id="festTitle">Diwali Mega Sale Live!</h2>
+        <p class="festival-subtitle" id="festSubtitle">Grab your favourites before they're gone • Extra 15% OFF with coupon</p>
+      </div>
+
+      <!-- Middle: Coupon Code Box -->
+      <div class="festival-coupon-box">
+        <div class="coupon-label">USE PROMO CODE</div>
+        <div class="coupon-chip" onclick="copyCouponCode()" title="Click to copy coupon code">
+          <span class="coupon-code" id="festCoupon">DIWALI15</span>
+          <button class="coupon-copy-btn" id="copyBtn">COPY</button>
+        </div>
+        <small class="coupon-terms">*Valid on all 50+ furniture rentals</small>
+      </div>
+
+      <!-- Right: Sales Ends In Live Countdown Timer -->
+      <div class="festival-timer-box">
+        <span class="timer-headline">SALES ENDS IN</span>
+        <div class="countdown-grid">
+          <div class="count-block">
+            <span class="count-num" id="cdDays">02</span>
+            <span class="count-unit">Days</span>
+          </div>
+          <div class="count-block">
+            <span class="count-num" id="cdHours">10</span>
+            <span class="count-unit">Hours</span>
+          </div>
+          <div class="count-block">
+            <span class="count-num" id="cdMinutes">09</span>
+            <span class="count-unit">Minutes</span>
+          </div>
+          <div class="count-block">
+            <span class="count-num" id="cdSeconds">02</span>
+            <span class="count-unit">Seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Festival Quick Switcher Bar (For testing & browsing any Indian festival) -->
+    <div class="festival-switcher-bar">
+      <span>Auto-detected Festival Campaign:</span>
+      <select id="festivalSelect" onchange="manualSwitchFestival(this.value)">
+        <option value="auto">⚡ Auto-Detect by Calendar Date</option>
+        <option value="diwali">🪔 Diwali Grand Festival Sale (Oct/Nov)</option>
+        <option value="durga_puja">🏮 Durga Puja & Navratri Mahotsav (Sept/Oct)</option>
+        <option value="independence">🇮🇳 Independence & Freedom Sale (August)</option>
+        <option value="ganesh">🐘 Ganesh Utsav Festive Sale (Sept)</option>
+        <option value="holi">🎨 Holi Colors of Joy Sale (March)</option>
+        <option value="republic">🇮🇳 Republic Day Mega Sale (January)</option>
+        <option value="year_end">❄️ Year-End Mega Clearance (December)</option>
+        <option value="new_year">🎉 Happy New Year 2027 Kickoff (January)</option>
+        <option value="weekend">⚡ Weekend Super Flash Sale (Fri-Sun)</option>
+      </select>
+    </div>
+  </section>
+
   <!-- Shop By Category Section -->
   <section class="category-section">
     <div class="category-header-wrap">
