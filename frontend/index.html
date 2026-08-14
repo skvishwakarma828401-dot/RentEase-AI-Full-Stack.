@@ -19,20 +19,232 @@
     </div>
   </nav>
 
-  <header class="hero">
-    <div>
-      <p class="eyebrow">SMART FURNITURE RENTAL</p>
-      <h1>Rent better.<br><span>Live smarter.</span></h1>
-      <p class="hero-copy">Find furniture for your space with our AI Furniture Assistant.</p>
-      <a class="primary" href="#products">Explore Furniture</a>
+  <!-- Top 10-Image Automatic Promotional Slider -->
+  <section class="hero-slider-section" id="heroSliderSection">
+    <div class="slider-wrapper" id="sliderWrapper">
+      <div class="slides-track" id="slidesTrack">
+        <!-- Slide 1: Living Room Sale -->
+        <div class="slide-item active" style="background-image: url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">UP TO</span>
+              <span class="badge-big">60%</span>
+              <span class="badge-sub">OFF*</span>
+              <div class="badge-ribbon">RIGHT TO SAVE SALE</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">LIVING ROOM LUXURY</span>
+              <h2>Premium Sofas & Couches</h2>
+              <p>Sectionals, 3-seaters, and recliners starting from <strong>₹799/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('sofa')">BUY / RENT NOW ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: Ergonomic Home Office Setup -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">WORK FROM HOME</span>
+              <span class="badge-big">35%</span>
+              <span class="badge-sub">OFF</span>
+              <div class="badge-ribbon">PRODUCTIVITY SALE</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">ERGONOMIC WORKSPACE</span>
+              <h2>Dual Motor Standing Desks</h2>
+              <p>Height-adjustable desks & study workstations starting from <strong>₹899/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('desk')">EXPLORE DESKS ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: Bedroom Comfort Beds -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">BEDROOM SPECIAL</span>
+              <span class="badge-big">50%</span>
+              <span class="badge-sub">OFF*</span>
+              <div class="badge-ribbon">STORAGE BEDS</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">SLEEP SANCTUARY</span>
+              <h2>King & Queen Size Beds</h2>
+              <p>Solid wood & hydraulic storage beds with 7-day mattress trial from <strong>₹1,299/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('bed')">VIEW BEDS ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 4: Office Mesh Chairs -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1580481077197-2a6d4ee29415?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">DOCTOR APPROVED</span>
+              <span class="badge-big">40%</span>
+              <span class="badge-sub">OFF</span>
+              <div class="badge-ribbon">LUMBAR SUPPORT</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">HEALTH & COMFORT</span>
+              <h2>Executive High-Back Chairs</h2>
+              <p>Breathable mesh, 3D armrests & tilt lock starting from <strong>₹499/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('chair')">BUY / RENT CHAIRS ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 5: Modern Dining Tables -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">FAMILY DINING</span>
+              <span class="badge-big">45%</span>
+              <span class="badge-sub">OFF*</span>
+              <div class="badge-ribbon">SOLID OAK & TEAK</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">DINING COLLECTIONS</span>
+              <h2>4 & 6-Seater Dining Sets</h2>
+              <p>Handcrafted solid oak tables with cushioned chairs from <strong>₹1,499/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('table')">BROWSE TABLES ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 6: Sliding Wardrobes -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">SPACE SAVING</span>
+              <span class="badge-big">30%</span>
+              <span class="badge-sub">OFF</span>
+              <div class="badge-ribbon">MIRROR SLIDERS</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">SMART STORAGE</span>
+              <h2>Modular 2 & 3-Door Wardrobes</h2>
+              <p>European soft-close almirahs with built-in organizer from <strong>₹1,199/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('wardrobe')">SHOP WARDROBES ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 7: Velvet Accent Armchairs -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">TRENDING</span>
+              <span class="badge-big">55%</span>
+              <span class="badge-sub">OFF*</span>
+              <div class="badge-ribbon">ACCENT SEATING</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">STATEMENT PIECES</span>
+              <h2>Mid-Century Velvet Armchairs</h2>
+              <p>Lounge chairs & recliners in emerald green & warm amber from <strong>₹699/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('chair')">VIEW LOUNGE CHAIRS ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 8: Coffee & Center Tables -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">ACCENT DEALS</span>
+              <span class="badge-big">25%</span>
+              <span class="badge-sub">OFF</span>
+              <div class="badge-ribbon">MARBLE & GLASS</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">LIVING ROOM ACCENTS</span>
+              <h2>Nesting Marble Coffee Tables</h2>
+              <p>Italian Carrara marble & tempered glass center tables from <strong>₹449/mo</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('table')">EXPLORE COFFEE TABLES ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 9: 1BHK / 2BHK Apartment Combos -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">COMBO SAVER</span>
+              <span class="badge-big">65%</span>
+              <span class="badge-sub">OFF*</span>
+              <div class="badge-ribbon">FULL HOME PACK</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">COMPLETE HOME FURNISHING</span>
+              <h2>Full 1BHK & 2BHK Rental Combos</h2>
+              <p>Sofa + Bed + Mattress + Dining + Wardrobe combo delivered in <strong>48 Hours</strong></p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="selectCategoryFilter('')">VIEW COMBO DEALS ▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 10: RentEase AI Assistant -->
+        <div class="slide-item" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80');">
+          <div class="slide-overlay">
+            <div class="slide-badge-circle">
+              <span class="badge-mini">AI SMART FIT</span>
+              <span class="badge-big">✦ AI</span>
+              <span class="badge-sub">GUIDE</span>
+              <div class="badge-ribbon">PERSONAL ADVISOR</div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">AI FURNITURE ASSISTANT</span>
+              <h2>Personalized Room Planning</h2>
+              <p>Ask our AI to recommend furniture based on room size & budget in seconds</p>
+              <div class="slide-cta-wrap">
+                <button class="slide-btn" onclick="window.RentEaseChatbot && window.RentEaseChatbot.toggle(true)">CHAT WITH AI ASSISTANT ✦</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow Controls -->
+      <button class="slider-arrow prev" onclick="changeHeroSlide(-1)" aria-label="Previous Slide">‹</button>
+      <button class="slider-arrow next" onclick="changeHeroSlide(1)" aria-label="Next Slide">›</button>
+
+      <!-- 10 Interactive Numbered Indicators -->
+      <div class="slider-dots-container" id="sliderDots"></div>
     </div>
-    <div class="hero-card">
-      <div class="spark">✦</div>
-      <h3>AI Furniture Assistant</h3>
-      <p>Tell us what you need in normal language.</p>
-      <div class="example">“Sofa under ₹20,000 for a small room”</div>
+
+    <!-- Bottom Promotional Ticker Ribbon -->
+    <div class="slider-bottom-ribbon">
+      <div class="ribbon-inner">
+        <span class="ribbon-item"><strong>⚡ UPI Extra 2% Instant Discount</strong> on All UPI Payments</span>
+        <span class="ribbon-divider">|</span>
+        <span class="ribbon-item"><strong>💳 No Cost EMI</strong> Available on All Products</span>
+        <span class="ribbon-divider">|</span>
+        <span class="ribbon-item"><strong>🚚 48-Hour Free Delivery & Assembly</strong> Across All Cities</span>
+        <span class="ribbon-divider">|</span>
+        <span class="ribbon-item"><strong>💰 100% Refundable Security Deposit</strong></span>
+      </div>
     </div>
-  </header>
+  </section>
 
   <!-- Shop By Category Section -->
   <section class="category-section">

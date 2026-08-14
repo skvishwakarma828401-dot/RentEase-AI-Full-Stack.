@@ -277,7 +277,85 @@ function updateUserStatus() {
   document.getElementById("userStatus").textContent = user ? `Hi, ${user.name}` : "Guest";
 }
 
+/* ==========================================================================
+   Top 10-Image Automatic Promotional Slider Controller
+   ========================================================================== */
+let currentHeroSlide = 0;
+const totalHeroSlides = 10;
+let heroSlideTimer = null;
+
+function initHeroSlider() {
+  const dotsContainer = document.getElementById("sliderDots");
+  const track = document.getElementById("slidesTrack");
+  const wrapper = document.getElementById("sliderWrapper");
+
+  if (!dotsContainer || !track) return;
+
+  // Render 10 numbered bullet dots
+  dotsContainer.innerHTML = Array.from({ length: totalHeroSlides }, (_, i) => `
+    <button class="slider-dot ${i === 0 ? 'active' : ''}" onclick="goToHeroSlide(${i})" aria-label="Go to slide ${i + 1}">
+      ${i + 1}
+    </button>
+  `).join("");
+
+  // Start auto timer (4.5 seconds per slide)
+  startHeroSlideTimer();
+
+  // Pause on mouse enter, resume on mouse leave
+  if (wrapper) {
+    wrapper.addEventListener("mouseenter", stopHeroSlideTimer);
+    wrapper.addEventListener("mouseleave", startHeroSlideTimer);
+
+    // Touch swipe support for mobile
+    let touchStartX = 0;
+    wrapper.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      stopHeroSlideTimer();
+    }, { passive: true });
+
+    wrapper.addEventListener("touchend", (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) changeHeroSlide(1);
+      else if (touchEndX - touchStartX > 50) changeHeroSlide(-1);
+      startHeroSlideTimer();
+    }, { passive: true });
+  }
+}
+
+function startHeroSlideTimer() {
+  stopHeroSlideTimer();
+  heroSlideTimer = setInterval(() => {
+    changeHeroSlide(1);
+  }, 4500);
+}
+
+function stopHeroSlideTimer() {
+  if (heroSlideTimer) {
+    clearInterval(heroSlideTimer);
+    heroSlideTimer = null;
+  }
+}
+
+function goToHeroSlide(index) {
+  currentHeroSlide = (index + totalHeroSlides) % totalHeroSlides;
+  const track = document.getElementById("slidesTrack");
+  if (track) {
+    track.style.transform = `translateX(-${currentHeroSlide * 100}%)`;
+  }
+
+  // Update active dot
+  document.querySelectorAll(".slider-dot").forEach((dot, idx) => {
+    dot.classList.toggle("active", idx === currentHeroSlide);
+  });
+}
+
+function changeHeroSlide(direction) {
+  goToHeroSlide(currentHeroSlide + direction);
+}
+
 loadProducts();
 updateCartCount();
 updateWishlistCount();
 updateUserStatus();
+initHeroSlider();
+

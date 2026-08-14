@@ -1647,6 +1647,294 @@ button, a { cursor: pointer; }
   }
 }
 
+/* ==========================================================================
+   Top 10-Image Automatic Promotional Hero Slider
+   ========================================================================== */
+.hero-slider-section {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  background: #f8fafc;
+}
+
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.slides-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.slide-item {
+  min-width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.45) 45%, rgba(15, 23, 42, 0.1) 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 8vw;
+  gap: 40px;
+}
+
+/* Promotional Stamp Badge (Matching Reference Screenshot) */
+.slide-badge-circle {
+  width: 155px;
+  height: 155px;
+  border-radius: 50%;
+  background: white;
+  border: 4px dashed #f97316;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 0 0 4px #fff7ed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  flex-shrink: 0;
+  animation: badgeFloat 3.5s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+.badge-mini {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.badge-big {
+  font-size: 34px;
+  font-weight: 900;
+  color: #ea580c;
+  line-height: 1;
+  letter-spacing: -1px;
+  margin: 2px 0;
+}
+
+.badge-sub {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ea580c;
+}
+
+.badge-ribbon {
+  position: absolute;
+  bottom: -10px;
+  background: #16a34a;
+  color: white;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 8px rgba(22, 163, 74, 0.4);
+  white-space: nowrap;
+}
+
+/* Slide Content */
+.slide-content {
+  max-width: 580px;
+  color: white;
+  z-index: 2;
+}
+
+.slide-tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.slide-content h2 {
+  font-size: 36px;
+  font-weight: 900;
+  margin: 0 0 10px;
+  letter-spacing: -1px;
+  color: white;
+  line-height: 1.15;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.slide-content p {
+  font-size: 16px;
+  color: #e2e8f0;
+  margin: 0 0 22px;
+  line-height: 1.5;
+}
+
+.slide-content p strong {
+  color: #fde047;
+  font-size: 18px;
+}
+
+.slide-btn {
+  background: #2563eb;
+  color: white;
+  border: 0;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slide-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.5);
+}
+
+/* Slider Left/Right Arrow Controls */
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+
+.slider-arrow:hover {
+  background: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slider-arrow.prev { left: 24px; }
+.slider-arrow.next { right: 24px; }
+
+/* Numbered Indicators Dots */
+.slider-dots-container {
+  position: absolute;
+  bottom: 18px;
+  right: 8vw;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.slider-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.slider-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #0f172a;
+}
+
+.slider-dot.active {
+  background: white;
+  color: #0f172a;
+  border-color: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+
+/* Bottom Promotional Ticker Ribbon */
+.slider-bottom-ribbon {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 8vw;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.ribbon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.ribbon-item strong {
+  color: #0f172a;
+}
+
+.ribbon-divider {
+  color: #cbd5e1;
+}
+
+@media (max-width: 900px) {
+  .slider-wrapper { height: 380px; }
+  .slide-content h2 { font-size: 28px; }
+  .slide-badge-circle { width: 120px; height: 120px; }
+  .badge-big { font-size: 26px; }
+  .slider-arrow { width: 36px; height: 36px; font-size: 18px; }
+  .slider-dots-container { right: 50%; transform: translateX(50%); bottom: 12px; }
+  .slider-dot { width: 22px; height: 22px; font-size: 10px; }
+  .ribbon-inner { justify-content: flex-start; }
+}
+
+@media (max-width: 650px) {
+  .slider-wrapper { height: 340px; }
+  .slide-overlay { padding: 0 5vw; gap: 16px; flex-direction: column; justify-content: center; align-items: flex-start; }
+  .slide-badge-circle { display: none; } /* On tiny screens focus on text & CTA */
+  .slide-content h2 { font-size: 24px; }
+  .slide-content p { font-size: 13px; margin-bottom: 16px; }
+  .slider-arrow { display: none; }
+}
+
+
 
 
 
