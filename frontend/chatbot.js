@@ -39,7 +39,17 @@
     const root = document.createElement("div");
     root.id = "rentease-chatbot-root";
     root.innerHTML = `
-      <!-- Floating Trigger Button -->
+      <!-- Floating WhatsApp Chat Button -->
+      <a id="whatsapp-fab" class="whatsapp-fab" href="https://wa.me/918210828893?text=Hi%20RentEase%2C%20I%20have%20a%20query%20about%20renting%20furniture." target="_blank" rel="noopener noreferrer" aria-label="Chat with Support on WhatsApp">
+        <div class="wa-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.97.53 1.768.815 2.795.815 3.182 0 5.768-2.587 5.769-5.767 0-3.181-2.587-5.769-5.769-5.769zm3.385 8.163c-.141.396-.713.729-1.002.767-.282.038-.647.16-2.12-.451-1.884-.78-3.089-2.709-3.184-2.834-.093-.125-.762-1.013-.762-1.932 0-.919.48-1.37.65-1.558.17-.188.376-.236.501-.236.126 0 .25.001.359.006.115.006.27-.044.423.323.156.376.533 1.298.58 1.393.047.094.078.204.016.33-.063.125-.094.204-.188.314-.094.11-.198.245-.282.33-.094.094-.192.196-.083.384.11.188.487.804 1.045 1.301.718.64 1.324.838 1.512.932.188.094.298.078.407-.047.11-.125.47-.549.596-.737.125-.188.25-.157.423-.094.172.063 1.096.517 1.284.611.188.094.313.141.36.219.047.078.047.454-.094.85z"/>
+          </svg>
+        </div>
+        <span class="fab-tooltip">Chat on WhatsApp (+91 8210828893)</span>
+      </a>
+
+      <!-- Floating Trigger Button (AI) -->
       <button id="chatbot-fab" class="chatbot-fab" aria-label="Open RentEase AI Chat">
         <div class="fab-badge pulse">✦</div>
         <div class="fab-icon-chat">
