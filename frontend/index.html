@@ -34,6 +34,94 @@
     </div>
   </header>
 
+  <!-- Shop By Category Section -->
+  <section class="category-section">
+    <div class="category-header-wrap">
+      <div>
+        <p class="eyebrow">BROWSE COLLECTIONS</p>
+        <h2 class="category-main-title">Shop By Category</h2>
+      </div>
+      <div class="category-nav-controls">
+        <button class="cat-nav-btn" onclick="scrollCategories(-1)" title="Previous categories" aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="cat-nav-btn" onclick="scrollCategories(1)" title="Next categories" aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="category-track-container" id="categoryTrack">
+      <!-- 1. All -->
+      <div class="category-item active" onclick="selectCategoryFilter('', this)">
+        <div class="category-circle">
+          <div class="category-all-icon">✦</div>
+        </div>
+        <span class="category-label">All Items</span>
+      </div>
+
+      <!-- 2. Sofas -->
+      <div class="category-item" onclick="selectCategoryFilter('sofa', this)">
+        <div class="category-circle">
+          <img src="images/Sofas.avif" alt="Sofas" onerror="this.src='https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80'" />
+        </div>
+        <span class="category-label">Sofas</span>
+      </div>
+
+      <!-- 3. Beds -->
+      <div class="category-item" onclick="selectCategoryFilter('bed', this)">
+        <div class="category-circle">
+          <img src="images/Bedroom.jpg" alt="Beds" onerror="this.src='https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=300&q=80'" />
+        </div>
+        <span class="category-label">Beds</span>
+      </div>
+
+      <!-- 4. Office Chairs -->
+      <div class="category-item" onclick="selectCategoryFilter('chair', this)">
+        <div class="category-circle">
+          <img src="images/chair.png" alt="Chairs" onerror="this.src='https://images.unsplash.com/photo-1580481077197-2a6d4ee29415?auto=format&fit=crop&w=300&q=80'" />
+        </div>
+        <span class="category-label">Office Chairs</span>
+      </div>
+
+      <!-- 5. Study Desks -->
+      <div class="category-item" onclick="selectCategoryFilter('desk', this)">
+        <div class="category-circle">
+          <img src="https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=300&q=80" alt="Study Desks" />
+        </div>
+        <span class="category-label">Study Desks</span>
+      </div>
+
+      <!-- 6. Dining Tables -->
+      <div class="category-item" onclick="selectCategoryFilter('table', this)">
+        <div class="category-circle">
+          <img src="images/DiningRoom.jpeg" alt="Dining Tables" onerror="this.src='https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=300&q=80'" />
+        </div>
+        <span class="category-label">Dining Tables</span>
+      </div>
+
+      <!-- 7. Wardrobes -->
+      <div class="category-item" onclick="selectCategoryFilter('wardrobe', this)">
+        <div class="category-circle">
+          <img src="https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=300&q=80" alt="Wardrobes" />
+        </div>
+        <span class="category-label">Wardrobes</span>
+      </div>
+
+      <!-- 8. Coffee Tables -->
+      <div class="category-item" onclick="selectCategoryFilter('table', this)">
+        <div class="category-circle">
+          <img src="images/Tables.avif" alt="Coffee Tables" onerror="this.src='https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=300&q=80'" />
+        </div>
+        <span class="category-label">Coffee Tables</span>
+      </div>
+    </div>
+  </section>
+
   <section class="ai-section">
     <div class="section-title">
       <p class="eyebrow">AI POWERED</p>

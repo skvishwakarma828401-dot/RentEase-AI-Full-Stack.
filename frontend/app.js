@@ -15,8 +15,10 @@ function money(value) {
 }
 
 async function loadProducts() {
-  const search = document.getElementById("search").value.trim();
-  const category = document.getElementById("category").value;
+  const searchEl = document.getElementById("search");
+  const categoryEl = document.getElementById("category");
+  const search = searchEl ? searchEl.value.trim() : "";
+  const category = categoryEl ? categoryEl.value : "";
 
   const params = new URLSearchParams();
   if (search) params.set("search", search);
@@ -25,9 +27,42 @@ async function loadProducts() {
   try {
     const res = await fetch(`${API}/products?${params.toString()}`);
     currentProducts = await res.json();
-    document.getElementById("productsGrid").innerHTML = currentProducts.map(productCard).join("");
+    const grid = document.getElementById("productsGrid");
+    if (grid) {
+      if (!currentProducts.length) {
+        grid.innerHTML = `<p style="grid-column: span 3; text-align: center; color: var(--muted); padding: 40px;">No furniture found in this category.</p>`;
+      } else {
+        grid.innerHTML = currentProducts.map(productCard).join("");
+      }
+    }
   } catch (err) {
     console.error("Failed to load products:", err);
+  }
+}
+
+function selectCategoryFilter(cat, element) {
+  // Update active category circle
+  document.querySelectorAll(".category-item").forEach(item => item.classList.remove("active"));
+  if (element) element.classList.add("active");
+
+  const catSelect = document.getElementById("category");
+  if (catSelect) {
+    catSelect.value = cat;
+  }
+
+  loadProducts();
+
+  // Smooth scroll to collection
+  const target = document.getElementById("products");
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function scrollCategories(direction) {
+  const track = document.getElementById("categoryTrack");
+  if (track) {
+    track.scrollBy({ left: direction * 280, behavior: "smooth" });
   }
 }
 
