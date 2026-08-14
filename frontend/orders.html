@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders & Tracking — RentEase</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">RentEase<span>.</span></a>
+    <div class="nav-actions">
+      <span id="userStatus">Guest</span>
+      <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
+      <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
+      <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
+      <button class="primary" onclick="window.location.href='/'">← Back to Shopping</button>
+    </div>
+  </nav>
+
+  <main class="orders-page container">
+    <div class="toolbar">
+      <div>
+        <p class="eyebrow">ORDER DASHBOARD</p>
+        <h2>My Rental Orders & Tracking</h2>
+      </div>
+      <button class="primary" onclick="window.location.href='/'">+ Rent More Furniture</button>
+    </div>
+
+    <!-- Orders Container -->
+    <div id="ordersContent">
+      <p style="text-align: center; color: var(--muted); padding: 40px;">Loading your orders...</p>
+    </div>
+  </main>
+
+  <footer>
+    <strong>RentEase.</strong>
+    <span>AI-powered furniture rental — portfolio project.</span>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close" onclick="closeAuth()">×</button>
+      <h2 id="authTitle">Login</h2>
+      <div id="nameField" class="hidden"><input id="authName" placeholder="Full name" /></div>
+      <input id="authEmail" type="email" placeholder="Email" />
+      <input id="authPassword" type="password" placeholder="Password (6+ characters)" />
+      <button class="primary full" onclick="submitAuth()">Continue</button>
+      <button class="text-btn" onclick="toggleAuthMode()" id="toggleAuth">Create an account</button>
+      <p id="authMessage"></p>
+    </div>
+  </div>
+
+  <script>
+    const API = "/api";
+    let token = localStorage.getItem("renteaseToken");
+    let orders = [];
+    let authMode = "login";
+
+    function money(value) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency", currency: "INR", maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    async function loadOrders() {
+      const container = document.getElementById("ordersContent");
+
+      if (!token) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 20px; border: 1px solid var(--line);">
+            <div style="font-size: 40px; margin-bottom: 12px;">🔒</div>
+            <h3 style="margin: 0 0 10px;">Please Login to Track Your Orders</h3>
+            <p style="color: var(--muted); margin-bottom: 24px;">Login to view your active rental subscriptions and live delivery tracker.</p>
+            <button class="primary" onclick="openAuth()">Login Now</button>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/orders/my-orders`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        orders = await res.json();
+
+        if (!res.ok || !orders.length) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 20px; border: 1px solid var(--line);">
+              <div style="font-size: 44px; margin-bottom: 12px;">📦</div>
+              <h3 style="margin: 0 0 10px;">No Orders Yet</h3>
+              <p style="color: var(--muted); margin-bottom: 24px;">You haven't placed any rental bookings yet. Explore our 50+ furniture collection!</p>
+              <a href="/" class="primary">Explore Catalog</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(orderCard).join("");
+      } catch (err) {
+        container.innerHTML = `<p style="color: red; text-align: center;">Failed to load orders: ${err.message}</p>`;
+      }
+    }
+
+    function getStepClasses(orderStatus, stepNumber) {
+      if (orderStatus === "cancelled") return "";
+      const statusMap = { "pending": 1, "kyc_verified": 2, "out_for_delivery": 3, "delivered": 4 };
+      const currentStep = statusMap[orderStatus] || 1;
+
+      if (stepNumber < currentStep) return "completed";
+      if (stepNumber === currentStep) return "active";
+      return "";
+    }
+
+    function orderCard(ord) {
+      const orderDate = new Date(ord.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric"
+      });
+
+      const isCancelled = ord.status === "cancelled";
+      const canCancel = ord.status === "pending" || ord.status === "kyc_verified";
+
+      return `
+        <div class="order-card">
+          <div class="order-top">
+            <div>
+              <span class="order-id">Order #${ord._id.slice(-6).toUpperCase()}</span>
+              <span style="color: var(--muted); margin-left: 12px; font-size: 13px;">Placed on ${orderDate}</span>
+              ${ord.payment && ord.payment.transactionId ? `
+                <span style="display:block; font-size:11px; color:#64748b; margin-top:3px;">
+                  Txn ID: <strong>${ord.payment.transactionId}</strong> (${(ord.payment.method || 'paid').toUpperCase()})
+                </span>` : ''}
+            </div>
+            <div>
+              <span class="order-status-tag status-${ord.status}">
+                ${ord.status.replace(/_/g, " ")}
+              </span>
+            </div>
+          </div>
+
+          <!-- Step Progress Timeline -->
+          ${!isCancelled ? `
+            <div class="order-timeline">
+              <div class="timeline-step ${getStepClasses(ord.status, 1)}">
+                <div class="step-circle">1</div>
+                <div class="step-label">Order Placed</div>
+                <div class="step-desc">Booking confirmed</div>
+              </div>
+              <div class="timeline-step ${getStepClasses(ord.status, 2)}">
+                <div class="step-circle">2</div>
+                <div class="step-label">KYC Verified</div>
+                <div class="step-desc">Docs approved</div>
+              </div>
+              <div class="timeline-step ${getStepClasses(ord.status, 3)}">
+                <div class="step-circle">3</div>
+                <div class="step-label">Out for Delivery</div>
+                <div class="step-desc">On technician vehicle</div>
+              </div>
+              <div class="timeline-step ${getStepClasses(ord.status, 4)}">
+                <div class="step-circle">4</div>
+                <div class="step-label">Delivered & Assembled</div>
+                <div class="step-desc">Enjoy your furniture!</div>
+              </div>
+            </div>
+          ` : `
+            <div style="background: #fee2e2; padding: 14px 20px; border-radius: 12px; margin: 20px 0; color: #991b1b; font-size: 13.5px;">
+              ⚠️ This order has been cancelled. Any security deposit or advance payment has been refunded to your source account.
+            </div>
+          `}
+
+          <!-- Items Ordered -->
+          <div class="order-items-list">
+            ${ord.items.map(item => `
+              <div class="order-mini-item">
+                <img src="${item.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80'}" alt="${item.name}">
+                <div class="order-mini-info">
+                  <h5>${item.name}</h5>
+                  <p>${money(item.price)}/mo × Qty: ${item.quantity}</p>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+
+          <!-- Bottom Summary and Actions -->
+          <div class="order-bottom">
+            <div class="order-total-block">
+              <span style="font-size: 13px; color: var(--muted);">Tenure: <strong>${ord.tenureMonths || 1} Months</strong> · Total Paid: </span>
+              <strong>${money(ord.total)}</strong>
+              ${ord.securityDeposit ? `<small style="display:block; color:#059669; font-size:11px;">(Includes ${money(ord.securityDeposit)} 100% refundable deposit)</small>` : ''}
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="ghost" onclick="window.RentEaseChatbot && window.RentEaseChatbot.toggle(true)" style="padding: 8px 16px; font-size: 13px;">
+                💬 Chat with AI Support
+              </button>
+              ${canCancel ? `
+                <button class="remove-btn" onclick="cancelOrder('${ord._id}')" style="padding: 8px 16px; font-size: 13px;">
+                  Cancel Order
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm("Are you sure you want to cancel this rental booking?")) return;
+
+      try {
+        const res = await fetch(`${API}/orders/${orderId}/cancel`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        if (!res.ok) return alert(data.message || "Could not cancel order");
+
+        alert("Order cancelled successfully. Refund initiated.");
+        loadOrders();
+      } catch (err) {
+        alert("Error cancelling order");
+      }
+    }
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem("renteaseCart") || "[]");
+      const el = document.getElementById("cartCount");
+      if (el) el.textContent = cart.reduce((n, x) => n + x.quantity, 0);
+    }
+
+    function updateWishlistCount() {
+      const wishlist = JSON.parse(localStorage.getItem("renteaseWishlist") || "[]");
+      const el = document.getElementById("wishlistCount");
+      if (el) el.textContent = wishlist.length;
+    }
+
+    function updateUserStatus() {
+      const user = JSON.parse(localStorage.getItem("renteaseUser") || "null");
+      document.getElementById("userStatus").textContent = user ? `Hi, ${user.name}` : "Guest";
+    }
+
+    function openAuth() {
+      document.getElementById("authModal").classList.remove("hidden");
+    }
+
+    function closeAuth() {
+      document.getElementById("authModal").classList.add("hidden");
+    }
+
+    function toggleAuthMode() {
+      authMode = authMode === "login" ? "register" : "login";
+      document.getElementById("authTitle").textContent = authMode === "login" ? "Login" : "Create Account";
+      document.getElementById("nameField").classList.toggle("hidden", authMode === "login");
+      document.getElementById("toggleAuth").textContent =
+        authMode === "login" ? "Create an account" : "Already have an account? Login";
+      document.getElementById("authMessage").textContent = "";
+    }
+
+    async function submitAuth() {
+      const name = document.getElementById("authName").value.trim();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+
+      const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
+      const body = authMode === "login" ? { email, password } : { name, email, password };
+
+      const res = await fetch(API + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById("authMessage").textContent = data.message;
+        return;
+      }
+
+      if (authMode === "login") {
+        token = data.token;
+        localStorage.setItem("renteaseToken", token);
+        localStorage.setItem("renteaseUser", JSON.stringify(data.user));
+        updateUserStatus();
+        closeAuth();
+        loadOrders();
+      } else {
+        alert("Account created! Please login.");
+        toggleAuthMode();
+      }
+    }
+
+    // Initialize
+    updateUserStatus();
+    updateCartCount();
+    updateWishlistCount();
+    loadOrders();
+  </script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

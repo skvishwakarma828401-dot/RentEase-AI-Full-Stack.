@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Wishlist — RentEase</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">RentEase<span>.</span></a>
+    <div class="nav-actions">
+      <span id="userStatus">Guest</span>
+      <button class="ghost" onclick="openAuth()">Login / Register</button>
+      <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
+      <button class="ghost" onclick="window.location.href='/orders.html'">📦 My Orders</button>
+      <button class="ghost" onclick="window.location.href='/admin.html'" style="border-color: #38bdf8; color: #0284c7;">🛡️ Admin</button>
+      <button class="primary" onclick="window.location.href='/'">← Back to Shopping</button>
+    </div>
+  </nav>
+
+  <main class="wishlist-page container">
+    <div class="toolbar">
+      <div>
+        <p class="eyebrow">SAVED ITEMS</p>
+        <h2>My Wishlist</h2>
+      </div>
+    </div>
+
+    <div id="wishlistContent"></div>
+  </main>
+
+  <footer>
+    <strong>RentEase.</strong>
+    <span>AI-powered furniture rental — portfolio project.</span>
+  </footer>
+
+  <div id="authModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close" onclick="closeAuth()">×</button>
+      <h2 id="authTitle">Login</h2>
+      <div id="nameField" class="hidden"><input id="authName" placeholder="Full name" /></div>
+      <input id="authEmail" type="email" placeholder="Email" />
+      <input id="authPassword" type="password" placeholder="Password (6+ characters)" />
+      <button class="primary full" onclick="submitAuth()">Continue</button>
+      <button class="text-btn" onclick="toggleAuthMode()" id="toggleAuth">Create an account</button>
+      <p id="authMessage"></p>
+    </div>
+  </div>
+
+  <script>
+    const API = "/api";
+    let wishlist = JSON.parse(localStorage.getItem("renteaseWishlist") || "[]");
+    let token = localStorage.getItem("renteaseToken");
+    let authMode = "login";
+
+    function money(value) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency", currency: "INR", maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function renderWishlist() {
+      const container = document.getElementById("wishlistContent");
+      
+      if (!wishlist.length) {
+        container.innerHTML = `
+          <div class="empty-wishlist">
+            <p>Your wishlist is empty.</p>
+            <a href="/" class="primary">Continue Shopping</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="wishlist-grid">
+          ${wishlist.map((item, index) => `
+            <div class="wishlist-item">
+              <img src="${item.image}" alt="${item.name}">
+              <div class="wishlist-item-body">
+                <span class="tag">${item.category}</span>
+                <h3>${item.name}</h3>
+                <p>${item.description}</p>
+                <div class="meta">
+                  <span class="price">${money(item.price)}</span>
+                  <span>★ ${item.rating}</span>
+                </div>
+                <div class="wishlist-actions">
+                  <button class="primary" onclick="addToCartByIndex(${index})">Add to Cart</button>
+                  <button class="remove-btn" onclick="removeWishlist(${index})">Remove</button>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function removeWishlist(index) {
+      wishlist.splice(index, 1);
+      saveWishlist();
+    }
+
+    function saveWishlist() {
+      localStorage.setItem("renteaseWishlist", JSON.stringify(wishlist));
+      renderWishlist();
+      updateWishlistCount();
+    }
+
+    function addToCartByIndex(index) {
+      const product = wishlist[index];
+      if (!product) return;
+      let cart = JSON.parse(localStorage.getItem("renteaseCart") || "[]");
+      const existing = cart.find(item => String(item.product) === String(product._id));
+      if (existing) existing.quantity += 1;
+      else cart.push({ product: product._id, name: product.name, price: product.price, quantity: 1 });
+      localStorage.setItem("renteaseCart", JSON.stringify(cart));
+      window.location.href = "/cart.html";
+    }
+
+    function updateWishlistCount() {
+      // Updates count in navbar if visible
+      if (document.getElementById("wishlistCount")) {
+        document.getElementById("wishlistCount").textContent = wishlist.length;
+      }
+    }
+
+    function updateUserStatus() {
+      const user = JSON.parse(localStorage.getItem("renteaseUser") || "null");
+      document.getElementById("userStatus").textContent = user ? `Hi, ${user.name}` : "Guest";
+    }
+
+    function openAuth() {
+      document.getElementById("authModal").classList.remove("hidden");
+    }
+
+    function closeAuth() {
+      document.getElementById("authModal").classList.add("hidden");
+    }
+
+    function toggleAuthMode() {
+      authMode = authMode === "login" ? "register" : "login";
+      document.getElementById("authTitle").textContent = authMode === "login" ? "Login" : "Create Account";
+      document.getElementById("nameField").classList.toggle("hidden", authMode === "login");
+      document.getElementById("toggleAuth").textContent =
+        authMode === "login" ? "Create an account" : "Already have an account? Login";
+      document.getElementById("authMessage").textContent = "";
+    }
+
+    async function submitAuth() {
+      const name = document.getElementById("authName").value.trim();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+
+      const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
+      const body = authMode === "login" ? { email, password } : { name, email, password };
+
+      const res = await fetch(API + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById("authMessage").textContent = data.message;
+        return;
+      }
+
+      if (authMode === "login") {
+        token = data.token;
+        localStorage.setItem("renteaseToken", token);
+        localStorage.setItem("renteaseUser", JSON.stringify(data.user));
+        updateUserStatus();
+        closeAuth();
+      } else {
+        alert("Account created. Please login.");
+        toggleAuthMode();
+      }
+    }
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem("renteaseCart") || "[]");
+      const el = document.getElementById("cartCount");
+      if (el) el.textContent = cart.reduce((n, x) => n + x.quantity, 0);
+    }
+
+    // Initialize page
+    updateUserStatus();
+    renderWishlist();
+    updateCartCount();
+  </script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Cart & Checkout — RentEase</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">RentEase<span>.</span></a>
+    <div class="nav-actions">
+      <span id="userStatus">Guest</span>
+      <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
+      <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
+      <button class="ghost" onclick="window.location.href='/orders.html'" id="ordersNavBtn">📦 My Orders</button>
+      <button class="primary" onclick="window.location.href='/'">← Back to Shopping</button>
+    </div>
+  </nav>
+
+  <main class="cart-page container">
+    <div class="toolbar">
+      <div>
+        <p class="eyebrow">CHECKOUT & RENTAL SETUP</p>
+        <h2>Review Your Order</h2>
+      </div>
+    </div>
+
+    <div class="cart-container">
+      <div class="cart-left-col">
+        <!-- 1. Items in Cart -->
+        <section class="cart-items-section">
+          <h3>1. Items in Cart</h3>
+          <div id="cartItems"></div>
+        </section>
+
+        <!-- 2. Rental Tenure Selector -->
+        <section class="tenure-section" id="tenureBox">
+          <h4>2. Choose Rental Tenure (Save up to 35%)</h4>
+          <div class="tenure-pills">
+            <div class="tenure-pill" onclick="selectTenure(1, 0)">
+              <strong>1 Month</strong>
+              <small>Standard Plan</small>
+            </div>
+            <div class="tenure-pill" onclick="selectTenure(3, 5)">
+              <strong>3 Months</strong>
+              <span class="tenure-discount-badge">5% OFF</span>
+            </div>
+            <div class="tenure-pill" onclick="selectTenure(6, 15)">
+              <strong>6 Months</strong>
+              <span class="tenure-discount-badge">15% OFF</span>
+            </div>
+            <div class="tenure-pill active" onclick="selectTenure(12, 25)">
+              <strong>12 Months</strong>
+              <span class="tenure-discount-badge">25% OFF 🔥</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Delivery Address Form -->
+        <section class="address-section" id="addressBox">
+          <h4>3. Delivery Address & Contact</h4>
+          <div class="address-grid">
+            <input id="addrName" placeholder="Full Name *" required />
+            <input id="addrPhone" placeholder="Mobile Number *" type="tel" required />
+            <input id="addrStreet" class="full-col" placeholder="Flat, House no., Building, Street *" required />
+            <input id="addrCity" placeholder="City *" required />
+            <input id="addrPincode" placeholder="Pincode *" required />
+          </div>
+        </section>
+      </div>
+
+      <!-- Order Summary Card -->
+      <section class="cart-summary">
+        <h3>Order Summary</h3>
+        <div id="cartSummary"></div>
+        <button class="primary full" onclick="openPaymentModal()" id="checkoutBtn">Proceed to Payment 💳</button>
+        <button class="ghost full" onclick="window.location.href='/'">Continue Shopping</button>
+      </section>
+    </div>
+  </main>
+
+  <!-- Razorpay / Payment Gateway Simulation Modal -->
+  <div id="paymentModal" class="payment-modal hidden">
+    <div class="payment-card">
+      <div class="payment-header">
+        <div>
+          <h3>RentEase Pay <span class="rzp-badge">Razorpay Test Mode</span></h3>
+          <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">100% Secure Encrypted Transaction</p>
+        </div>
+        <button class="close" style="color: white; top: 16px; right: 18px;" onclick="closePaymentModal()">×</button>
+      </div>
+      <div class="payment-body">
+        <div class="payment-methods">
+          <div class="method-btn active" onclick="selectPayMethod('razorpay', this)">⚡ Razorpay / UPI</div>
+          <div class="method-btn" onclick="selectPayMethod('card', this)">💳 Card</div>
+          <div class="method-btn" onclick="selectPayMethod('netbanking', this)">🏦 NetBanking</div>
+          <div class="method-btn" onclick="selectPayMethod('cod', this)">💵 Pay on Delivery</div>
+        </div>
+
+        <!-- Form fields depending on method -->
+        <div id="payFormDetails" class="payment-form-box">
+          <p style="margin-top:0; font-size: 13px; font-weight: 700; color: #334155;">Enter UPI ID (GooglePay / PhonePe / Paytm):</p>
+          <input id="upiInput" value="user@okhdfcbank" placeholder="e.g. yourname@upi" />
+          <small style="color: #64748b; font-size: 11px;">Simulation mode: Any mock UPI ID works automatically.</small>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0;">
+          <span>Total Amount Payable:</span>
+          <strong id="modalPayableTotal" style="font-size: 20px; color: #166534;">₹0</strong>
+        </div>
+
+        <button class="pay-btn-rzp" id="paySubmitBtn" onclick="processPayment()">
+          <span id="payBtnText">Pay Now</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>RentEase.</strong>
+    <span>AI-powered furniture rental — portfolio project.</span>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close" onclick="closeAuth()">×</button>
+      <h2 id="authTitle">Login</h2>
+      <div id="nameField" class="hidden"><input id="authName" placeholder="Full name" /></div>
+      <input id="authEmail" type="email" placeholder="Email" />
+      <input id="authPassword" type="password" placeholder="Password (6+ characters)" />
+      <button class="primary full" onclick="submitAuth()">Continue</button>
+      <button class="text-btn" onclick="toggleAuthMode()" id="toggleAuth">Create an account</button>
+      <p id="authMessage"></p>
+    </div>
+  </div>
+
+  <script>
+    const API = "/api";
+    let cart = JSON.parse(localStorage.getItem("renteaseCart") || "[]");
+    let token = localStorage.getItem("renteaseToken");
+    let selectedTenure = 12;
+    let selectedDiscountPercent = 25;
+    let selectedPaymentMethod = "razorpay";
+    let authMode = "login";
+
+    function money(value) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency", currency: "INR", maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function selectTenure(months, discount) {
+      selectedTenure = months;
+      selectedDiscountPercent = discount;
+      document.querySelectorAll(".tenure-pill").forEach(p => p.classList.remove("active"));
+      event.currentTarget.classList.add("active");
+      renderCart();
+    }
+
+    function selectPayMethod(method, el) {
+      selectedPaymentMethod = method;
+      document.querySelectorAll(".method-btn").forEach(b => b.classList.remove("active"));
+      el.classList.add("active");
+
+      const box = document.getElementById("payFormDetails");
+      if (method === "razorpay" || method === "upi") {
+        box.innerHTML = `
+          <p style="margin-top:0; font-size: 13px; font-weight: 700; color: #334155;">Enter UPI ID (GooglePay / PhonePe / Paytm):</p>
+          <input id="upiInput" value="user@okhdfcbank" placeholder="e.g. yourname@upi" />
+          <small style="color: #64748b; font-size: 11px;">Simulation mode: Any test UPI ID works instantly.</small>
+        `;
+      } else if (method === "card") {
+        box.innerHTML = `
+          <p style="margin-top:0; font-size: 13px; font-weight: 700; color: #334155;">Enter Card Details (Test Mode):</p>
+          <input placeholder="Card Number (e.g. 4111 2222 3333 4444)" value="4111 2222 3333 4444" />
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input placeholder="MM / YY" value="12/28" />
+            <input placeholder="CVV" type="password" value="123" />
+          </div>
+        `;
+      } else if (method === "netbanking") {
+        box.innerHTML = `
+          <p style="margin-top:0; font-size: 13px; font-weight: 700; color: #334155;">Select Bank:</p>
+          <select style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+            <option>HDFC Bank</option>
+            <option>State Bank of India (SBI)</option>
+            <option>ICICI Bank</option>
+            <option>Axis Bank</option>
+          </select>
+        `;
+      } else {
+        box.innerHTML = `
+          <p style="margin-top:0; font-size: 13px; font-weight: 700; color: #334155;">Pay on Delivery & Doorstep KYC</p>
+          <small style="color: #64748b; font-size: 12px;">You can pay the first month rent + deposit via UPI or Cash during delivery & assembly.</small>
+        `;
+      }
+    }
+
+    function renderCart() {
+      const cartBox = document.getElementById("cartItems");
+      
+      if (!cart.length) {
+        cartBox.innerHTML = "<p class='empty-cart'>Your cart is empty. <a href='/'>Browse Furniture</a></p>";
+        document.getElementById("cartSummary").innerHTML = "";
+        document.getElementById("tenureBox").style.display = "none";
+        document.getElementById("addressBox").style.display = "none";
+        document.getElementById("checkoutBtn").style.display = "none";
+        return;
+      }
+
+      document.getElementById("tenureBox").style.display = "block";
+      document.getElementById("addressBox").style.display = "block";
+      document.getElementById("checkoutBtn").style.display = "block";
+
+      cartBox.innerHTML = cart.map((item, index) => `
+        <div class="cart-item-detail">
+          <div class="item-info">
+            <strong>${item.name}</strong>
+            <p>${money(item.price)} per month</p>
+          </div>
+          <div class="item-controls">
+            <div class="quantity">
+              <button onclick="decreaseQuantity(${index})">−</button>
+              <span>${item.quantity}</span>
+              <button onclick="increaseQuantity(${index})">+</button>
+            </div>
+            <p class="item-total">${money(item.price * item.quantity)}</p>
+            <button class="remove-btn" onclick="removeCart(${index})">Remove</button>
+          </div>
+        </div>
+      `).join("");
+
+      const monthlySubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discountAmount = Math.round((monthlySubtotal * selectedDiscountPercent) / 100);
+      const discountedMonthly = monthlySubtotal - discountAmount;
+      const securityDeposit = Math.round(monthlySubtotal * 0.5); // 50% refundable
+      const totalPayable = discountedMonthly + securityDeposit;
+      const itemCount = cart.reduce((n, x) => n + x.quantity, 0);
+
+      document.getElementById("cartSummary").innerHTML = `
+        <div class="summary-line">
+          <span>Items (${itemCount}) Monthly Rent</span>
+          <strong>${money(monthlySubtotal)}</strong>
+        </div>
+        <div class="summary-line">
+          <span>Tenure Plan</span>
+          <strong>${selectedTenure} Months (${selectedDiscountPercent}% OFF)</strong>
+        </div>
+        ${discountAmount > 0 ? `
+        <div class="summary-line" style="color: #10b981;">
+          <span>Tenure Discount Savings</span>
+          <strong>-${money(discountAmount)}/mo</strong>
+        </div>` : ''}
+        <div class="summary-line">
+          <span>1st Month Effective Rent</span>
+          <strong>${money(discountedMonthly)}</strong>
+        </div>
+        <div class="summary-line">
+          <span>Refundable Security Deposit</span>
+          <strong>${money(securityDeposit)}</strong>
+        </div>
+        <div class="summary-line">
+          <span>Doorstep Delivery & Assembly</span>
+          <strong style="color: #10b981;">FREE</strong>
+        </div>
+        <div class="summary-total">
+          <div>
+            <span>Total Payable Now</span>
+            <small style="display:block; font-size:10px; font-weight:normal; color:#666;">(1st Month Rent + 100% Refundable Deposit)</small>
+          </div>
+          <strong>${money(totalPayable)}</strong>
+        </div>
+      `;
+
+      document.getElementById("modalPayableTotal").textContent = money(totalPayable);
+    }
+
+    function increaseQuantity(index) {
+      if (cart[index]) {
+        cart[index].quantity += 1;
+        saveCart();
+      }
+    }
+
+    function decreaseQuantity(index) {
+      if (cart[index] && cart[index].quantity > 1) {
+        cart[index].quantity -= 1;
+        saveCart();
+      }
+    }
+
+    function removeCart(index) {
+      cart.splice(index, 1);
+      saveCart();
+    }
+
+    function saveCart() {
+      localStorage.setItem("renteaseCart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    function openPaymentModal() {
+      if (!cart.length) return alert("Your cart is empty.");
+      if (!token) {
+        openAuth();
+        return alert("Please login or create an account to proceed with checkout.");
+      }
+
+      // Address validation
+      const name = document.getElementById("addrName").value.trim();
+      const phone = document.getElementById("addrPhone").value.trim();
+      const street = document.getElementById("addrStreet").value.trim();
+      const city = document.getElementById("addrCity").value.trim();
+      const pincode = document.getElementById("addrPincode").value.trim();
+
+      if (!name || !phone || !street || !city || !pincode) {
+        return alert("Please fill in your Delivery Address & Contact details before payment.");
+      }
+
+      document.getElementById("paymentModal").classList.remove("hidden");
+    }
+
+    function closePaymentModal() {
+      document.getElementById("paymentModal").classList.add("hidden");
+    }
+
+    async function processPayment() {
+      const btn = document.getElementById("paySubmitBtn");
+      const btnText = document.getElementById("payBtnText");
+      btn.disabled = true;
+      btnText.innerHTML = "<span class='pay-loader'></span> Processing Transaction...";
+
+      const shippingAddress = {
+        fullName: document.getElementById("addrName").value.trim(),
+        phone: document.getElementById("addrPhone").value.trim(),
+        street: document.getElementById("addrStreet").value.trim(),
+        city: document.getElementById("addrCity").value.trim(),
+        pincode: document.getElementById("addrPincode").value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API}/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            items: cart.map(x => ({ product: x.product, quantity: x.quantity })),
+            tenureMonths: selectedTenure,
+            shippingAddress,
+            paymentMethod: selectedPaymentMethod
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          btn.disabled = false;
+          btnText.textContent = "Pay Now";
+          return alert(data.message || "Order placement failed");
+        }
+
+        // Success simulation
+        btnText.textContent = "✓ Payment Successful!";
+        btn.style.background = "#166534";
+
+        setTimeout(() => {
+          cart = [];
+          saveCart();
+          closePaymentModal();
+          alert(`🎉 Payment Successful! Order #${data._id.slice(-6)} has been placed.\nTransaction ID: ${data.payment.transactionId}`);
+          window.location.href = "/orders.html";
+        }, 1200);
+
+      } catch (err) {
+        btn.disabled = false;
+        btnText.textContent = "Pay Now";
+        alert("Payment connection error. Please try again.");
+      }
+    }
+
+    function updateWishlistCount() {
+      const wishlist = JSON.parse(localStorage.getItem("renteaseWishlist") || "[]");
+      const el = document.getElementById("wishlistCount");
+      if (el) el.textContent = wishlist.length;
+    }
+
+    function updateUserStatus() {
+      const user = JSON.parse(localStorage.getItem("renteaseUser") || "null");
+      document.getElementById("userStatus").textContent = user ? `Hi, ${user.name}` : "Guest";
+      
+      // Auto fill address name if user is logged in
+      if (user && user.name && !document.getElementById("addrName").value) {
+        document.getElementById("addrName").value = user.name;
+      }
+    }
+
+    function openAuth() {
+      document.getElementById("authModal").classList.remove("hidden");
+    }
+
+    function closeAuth() {
+      document.getElementById("authModal").classList.add("hidden");
+    }
+
+    function toggleAuthMode() {
+      authMode = authMode === "login" ? "register" : "login";
+      document.getElementById("authTitle").textContent = authMode === "login" ? "Login" : "Create Account";
+      document.getElementById("nameField").classList.toggle("hidden", authMode === "login");
+      document.getElementById("toggleAuth").textContent =
+        authMode === "login" ? "Create an account" : "Already have an account? Login";
+      document.getElementById("authMessage").textContent = "";
+    }
+
+    async function submitAuth() {
+      const name = document.getElementById("authName").value.trim();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+
+      const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
+      const body = authMode === "login" ? { email, password } : { name, email, password };
+
+      const res = await fetch(API + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById("authMessage").textContent = data.message;
+        return;
+      }
+
+      if (authMode === "login") {
+        token = data.token;
+        localStorage.setItem("renteaseToken", token);
+        localStorage.setItem("renteaseUser", JSON.stringify(data.user));
+        updateUserStatus();
+        closeAuth();
+      } else {
+        alert("Account created! Please login.");
+        toggleAuthMode();
+      }
+    }
+
+    // Initialize page
+    updateUserStatus();
+    renderCart();
+    updateWishlistCount();
+
+    window.updateCartCount = function() {
+      cart = JSON.parse(localStorage.getItem("renteaseCart") || "[]");
+      renderCart();
+    };
+  </script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

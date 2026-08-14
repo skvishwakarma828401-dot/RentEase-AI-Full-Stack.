@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RentEase — AI Furniture Rental</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">RentEase<span>.</span></a>
+    <div class="nav-actions">
+      <span id="userStatus">Guest</span>
+      <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
+      <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
+      <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
+      <button class="ghost" onclick="window.location.href='/orders.html'">📦 My Orders</button>
+      <button class="ghost" onclick="window.location.href='/admin.html'" style="border-color: #38bdf8; color: #0284c7;">🛡️ Admin</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <p class="eyebrow">SMART FURNITURE RENTAL</p>
+      <h1>Rent better.<br><span>Live smarter.</span></h1>
+      <p class="hero-copy">Find furniture for your space with our AI Furniture Assistant.</p>
+      <a class="primary" href="#products">Explore Furniture</a>
+    </div>
+    <div class="hero-card">
+      <div class="spark">✦</div>
+      <h3>AI Furniture Assistant</h3>
+      <p>Tell us what you need in normal language.</p>
+      <div class="example">“Sofa under ₹20,000 for a small room”</div>
+    </div>
+  </header>
+
+  <section class="ai-section">
+    <div class="section-title">
+      <p class="eyebrow">AI POWERED</p>
+      <h2>What are you looking for?</h2>
+      <p>Describe your budget, furniture type and room size.</p>
+    </div>
+    <div class="ai-box">
+      <textarea id="aiMessage" placeholder="Example: Find me a sofa under ₹20,000 for a small room"></textarea>
+      <button class="primary" onclick="askAI()">Ask AI ✦</button>
+    </div>
+    <div id="aiResult"></div>
+  </section>
+
+  <main id="products" class="container">
+    <div class="toolbar">
+      <div>
+        <p class="eyebrow">COLLECTION</p>
+        <h2>Featured Furniture</h2>
+      </div>
+      <div class="filters">
+        <input id="search" placeholder="Search furniture..." oninput="loadProducts()" />
+        <select id="category" onchange="loadProducts()">
+          <option value="">All categories</option>
+          <option value="sofa">Sofa</option>
+          <option value="bed">Bed</option>
+          <option value="table">Table</option>
+          <option value="chair">Chair</option>
+          <option value="wardrobe">Wardrobe</option>
+          <option value="desk">Desk</option>
+        </select>
+      </div>
+    </div>
+    <div id="productsGrid" class="grid"></div>
+  </main>
+
+  <footer>
+    <strong>RentEase.</strong>
+    <span>AI-powered furniture rental — portfolio project.</span>
+  </footer>
+
+  <div id="authModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close" onclick="closeAuth()">×</button>
+      <h2 id="authTitle">Login</h2>
+      <div id="nameField" class="hidden"><input id="authName" placeholder="Full name" /></div>
+      <input id="authEmail" type="email" placeholder="Email" />
+      <input id="authPassword" type="password" placeholder="Password (6+ characters)" />
+      <button class="primary full" onclick="submitAuth()">Continue</button>
+      <button class="text-btn" onclick="toggleAuthMode()" id="toggleAuth">Create an account</button>
+      <p id="authMessage"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>
