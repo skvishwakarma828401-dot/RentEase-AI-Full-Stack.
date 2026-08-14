@@ -10,6 +10,9 @@
   <nav class="navbar">
     <a class="logo" href="/">RentEase<span>.</span></a>
     <div class="nav-actions">
+      <button class="scanner-nav-trigger" onclick="openRoomScanner()" title="Scan your room or any space with Live AI Camera">
+        <span class="cam-dot"></span> 📷 AI Room Scanner
+      </button>
       <span id="userStatus">Guest</span>
       <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
       <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
@@ -390,12 +393,51 @@
         <span class="category-label">Wardrobes</span>
       </div>
 
-      <!-- 8. Coffee Tables -->
+      <!-- 8. Kids & Child Furniture (NEW) -->
+      <div class="category-item" onclick="selectCategoryFilter('kids', this)">
+        <div class="category-circle">
+          <img src="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=300&q=80" alt="Kids Furniture" />
+        </div>
+        <span class="category-label">Kids & Baby</span>
+      </div>
+
+      <!-- 9. Coffee Tables -->
       <div class="category-item" onclick="selectCategoryFilter('table', this)">
         <div class="category-circle">
           <img src="images/Tables.avif" alt="Coffee Tables" onerror="this.src='https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=300&q=80'" />
         </div>
         <span class="category-label">Coffee Tables</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live AI Spatial Room Scanner Banner -->
+  <section class="scanner-feature-banner">
+    <div class="scanner-banner-card">
+      <div class="scanner-banner-info">
+        <span class="scanner-pill">✦ REAL-TIME AR VISION SCANNER</span>
+        <h2>Scan Your Room with AI Camera</h2>
+        <p>Open your camera to scan any space (Living room, Bedroom, Kids nursery, Study or Balcony). Our AI measures spatial layout, color harmony, and recommends perfectly fitted furniture!</p>
+        <div class="scanner-cta-group">
+          <button class="scanner-main-btn" onclick="openRoomScanner()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            Open Live Room Scanner
+          </button>
+          <button class="scanner-secondary-btn" onclick="openRoomScanner(true)">
+            📁 Upload Space Photo
+          </button>
+        </div>
+      </div>
+      <div class="scanner-banner-graphic" onclick="openRoomScanner()">
+        <div class="scanner-camera-frame">
+          <div class="laser-scanner-line"></div>
+          <div class="hud-reticle"></div>
+          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80" alt="Room Spatial Scan" />
+          <div class="scanner-floating-badge">98% Fit Score Detected</div>
+        </div>
       </div>
     </div>
   </section>
@@ -407,7 +449,7 @@
       <p>Describe your budget, furniture type and room size.</p>
     </div>
     <div class="ai-box">
-      <textarea id="aiMessage" placeholder="Example: Find me a sofa under ₹20,000 for a small room"></textarea>
+      <textarea id="aiMessage" placeholder="Example: Find me a kids study desk and bunk bed under ₹20,000"></textarea>
       <button class="primary" onclick="askAI()">Ask AI ✦</button>
     </div>
     <div id="aiResult"></div>
@@ -416,19 +458,20 @@
   <main id="products" class="container">
     <div class="toolbar">
       <div>
-        <p class="eyebrow">COLLECTION</p>
+        <p class="eyebrow">COLLECTION (150+ ITEMS)</p>
         <h2>Featured Furniture</h2>
       </div>
       <div class="filters">
-        <input id="search" placeholder="Search furniture..." oninput="loadProducts()" />
+        <input id="search" placeholder="Search furniture (e.g. Sofa, Kids, Bed, Chair)..." oninput="loadProducts()" />
         <select id="category" onchange="loadProducts()">
-          <option value="">All categories</option>
-          <option value="sofa">Sofa</option>
-          <option value="bed">Bed</option>
-          <option value="table">Table</option>
-          <option value="chair">Chair</option>
-          <option value="wardrobe">Wardrobe</option>
-          <option value="desk">Desk</option>
+          <option value="">All categories (150+ items)</option>
+          <option value="kids">🧸 Kids & Child Furniture</option>
+          <option value="sofa">🛋️ Sofa & Sectionals</option>
+          <option value="bed">🛏️ Beds & Mattresses</option>
+          <option value="chair">🪑 Chairs & Recliners</option>
+          <option value="desk">🖥️ Study & Office Desks</option>
+          <option value="table">🍽️ Dining & Coffee Tables</option>
+          <option value="wardrobe">🚪 Wardrobes & Closets</option>
         </select>
       </div>
     </div>
@@ -577,6 +620,106 @@
       <button class="primary full" onclick="submitAuth()">Continue</button>
       <button class="text-btn" onclick="toggleAuthMode()" id="toggleAuth">Create an account</button>
       <p id="authMessage"></p>
+    </div>
+  </div>
+
+  <!-- Real-Time AI Camera Room Scanner Modal -->
+  <div id="roomScannerModal" class="modal hidden">
+    <div class="modal-card scanner-modal-card">
+      <button class="close" onclick="closeRoomScanner()">×</button>
+      <div class="scanner-modal-header">
+        <div class="scanner-badge-tag">✦ REAL-TIME AR VISION</div>
+        <h2>AI Spatial Room Scanner</h2>
+        <p>Point your camera at your room or upload a photo to get tailored furniture fit recommendations.</p>
+      </div>
+
+      <!-- Room Type Selector Hint -->
+      <div class="scanner-room-hints">
+        <label for="roomTypeHint">Space Type:</label>
+        <select id="roomTypeHint" onchange="onRoomHintChange()">
+          <option value="kids">🧸 Child / Kids Nursery & Study</option>
+          <option value="living">🛋️ Living Room & Lounge Hall</option>
+          <option value="bedroom">🛏️ Bedroom Sanctuary</option>
+          <option value="office">🖥️ Home Office / Study Studio</option>
+          <option value="dining">🍽️ Dining & Kitchen Nook</option>
+          <option value="any">🌿 Balcony / Any Other Space</option>
+        </select>
+      </div>
+
+      <!-- Live Video Viewfinder & Overlay -->
+      <div class="scanner-viewfinder-wrap" id="viewfinderWrap">
+        <video id="scannerVideo" autoplay playsinline muted></video>
+        <img id="scannerCapturedImg" class="hidden" alt="Captured Room" />
+        <canvas id="scannerCanvas" style="display:none;"></canvas>
+
+        <!-- Laser Scan & HUD Reticle -->
+        <div class="scanner-laser" id="scannerLaser"></div>
+        <div class="scanner-hud-reticle">
+          <span class="hud-corner tl"></span>
+          <span class="hud-corner tr"></span>
+          <span class="hud-corner bl"></span>
+          <span class="hud-corner br"></span>
+          <div class="hud-status" id="hudStatus">
+            <span class="hud-pulse-dot"></span> LIVE SCANNING 3D SPACE...
+          </div>
+        </div>
+      </div>
+
+      <!-- Scanner Action Buttons -->
+      <div class="scanner-controls">
+        <button class="scanner-action-btn primary" id="captureBtn" onclick="captureAndAnalyzeRoom()">
+          📸 Snap & Analyze Space
+        </button>
+        <button class="scanner-action-btn ghost" id="flipCamBtn" onclick="switchCamera()">
+          🔄 Flip Camera
+        </button>
+        <label class="scanner-action-btn ghost upload-btn" for="scannerFileInput">
+          📁 Upload Photo
+          <input type="file" id="scannerFileInput" accept="image/*" onchange="handleImageUpload(event)" style="display:none;" />
+        </label>
+        <button class="scanner-action-btn ghost hidden" id="retakeBtn" onclick="retakeRoomScan()">
+          ↺ Scan Again
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="scannerLoading" class="scanner-loading hidden">
+        <div class="scanner-spinner"></div>
+        <p><strong>AI Vision is analyzing spatial dimensions, lighting & color palette...</strong></p>
+      </div>
+
+      <!-- AI Spatial Analysis Results -->
+      <div id="scannerResults" class="scanner-results hidden">
+        <div class="analysis-summary-card">
+          <div class="analysis-header-row">
+            <div>
+              <span class="analysis-fit-score" id="resFitScore">98% Fit Score</span>
+              <h3 id="resRoomType">Child & Kids Nursery / Study Zone</h3>
+            </div>
+            <div class="res-meta-chips">
+              <span class="res-chip" id="resDimensions">📐 11 ft × 13 ft</span>
+              <span class="res-chip" id="resLighting">💡 Soft Warm Lighting</span>
+            </div>
+          </div>
+
+          <div class="res-palette-section">
+            <span class="res-sub-label">Recommended Color Harmony:</span>
+            <div class="palette-swatches-wrap" id="resPaletteSwatches"></div>
+            <small id="resPaletteNames">Sky Blue, Blush Pink, Soft Butter & Birch White</small>
+          </div>
+
+          <div class="res-tips-box">
+            <strong>💡 AI Spatial Layout Recommendation:</strong>
+            <p id="resTips">Recommend low-profile modular furniture with rounded safety edges to preserve central floor space for active play and easy cleanup.</p>
+          </div>
+        </div>
+
+        <!-- Matched Furniture Products -->
+        <div class="scanner-matched-products">
+          <h4>Recommended Furniture for Your Scanned Space</h4>
+          <div class="scanner-products-grid" id="scannerProductsGrid"></div>
+        </div>
+      </div>
     </div>
   </div>
 

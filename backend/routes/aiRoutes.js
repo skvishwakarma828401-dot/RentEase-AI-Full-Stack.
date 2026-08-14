@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Product = require("../models/Product");
-const { parseWithAI, processChatMessage } = require("../services/aiService");
+const { parseWithAI, processChatMessage, analyzeRoomScan } = require("../services/aiService");
 
 // Conversational Chatbot endpoint for interactive floating widget
 router.post("/chat", async (req, res) => {
@@ -69,4 +69,27 @@ router.post("/recommend", async (req, res) => {
   }
 });
 
+// Real-Time Camera Room Scanner & Spatial AI Vision Analyzer
+router.post("/scan-room", async (req, res) => {
+  try {
+    const { imageData, roomTypeHint, spaceSizeHint } = req.body;
+
+    const result = await analyzeRoomScan({
+      imageData,
+      roomTypeHint,
+      spaceSizeHint,
+      ProductModel: Product
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Room scan API error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Room analysis failed. Please try again."
+    });
+  }
+});
+
 module.exports = router;
+
