@@ -23,21 +23,68 @@ app.use(cors());
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ limit: "25mb", extended: true }));
 
+// Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
+// Simple In-Memory Rate Limiting for Auth & AI Protection
+const rateLimitMap = new Map();
+function rateLimiter(limit = 60, windowMs = 60000) {
+  return (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress || "global";
+    const key = `${ip}_${req.baseUrl}`;
+    const now = Date.now();
+    const record = rateLimitMap.get(key) || { count: 0, resetTime: now + windowMs };
+
+    if (now > record.resetTime) {
+      record.count = 1;
+      record.resetTime = now + windowMs;
+    } else {
+      record.count += 1;
+    }
+
+    rateLimitMap.set(key, record);
+
+    if (record.count > limit) {
+      return res.status(429).json({
+        message: "Too many requests. Please slow down and try again in a minute."
+      });
+    }
+    next();
+  };
+}
+
 // Set default DB state
 app.locals.isDbConnected = false;
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", rateLimiter(20, 60000), authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/ai", aiRoutes);
+app.use("/api/ai", rateLimiter(30, 60000), aiRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "RentEase API is running",
+    message: "RentEase Enterprise API is running smoothly",
     mode: app.locals.isDbConnected ? "MongoDB Connected" : "High-Availability In-Memory Mode",
-    productsCount: fallbackProducts.length
+    productsCount: fallbackProducts.length,
+    features: [
+      "150 Products Catalog",
+      "Room AR Camera Scanner",
+      "Interactive Quick-View Modal",
+      "Indian Pincode Eligibility Engine",
+      "Customer Reviews & Star Ratings",
+      "Digital KYC Verification Portal",
+      "1-Click GST Tax Invoice Generator",
+      "Rent-to-Own Buyout & Tenure Extension",
+      "Recently Viewed History",
+      "Dark / Light Mode"
+    ]
   });
 });
 

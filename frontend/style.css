@@ -3170,6 +3170,552 @@ button, a { cursor: pointer; }
   color: #f1f5f9;
 }
 
+/* ==========================================================================
+   Interactive Product Quick-View & Specifications Modal
+   ========================================================================== */
+.quickview-modal-card {
+  max-width: 960px;
+  width: 94vw;
+  background: var(--card);
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  padding: 36px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.quickview-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.quickview-media img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.qv-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.qv-badge {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.qv-cat {
+  letter-spacing: 1.5px;
+  font-size: 11.5px;
+  font-weight: 900;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.quickview-details h2 {
+  font-size: 26px;
+  margin: 6px 0 10px;
+  line-height: 1.25;
+}
+
+.qv-rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+}
+
+.qv-stars { color: #f59e0b; }
+.qv-rating-score { font-weight: 800; }
+.qv-reviews-count { color: #0284c7; text-decoration: none; font-weight: 600; cursor: pointer; }
+
+.qv-price-box {
+  background: rgba(31, 75, 63, 0.06);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+[data-theme="dark"] .qv-price-box {
+  background: #1a243a;
+  border-color: #2e3d5b;
+}
+
+.qv-monthly-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.qv-price-val {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.qv-price-unit {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.qv-security-deposit {
+  font-size: 12.5px;
+  color: #059669;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.qv-tenure-wrap label, .qv-pincode-box label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.qv-tenure-pills {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.qv-pill {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  padding: 8px 4px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.qv-pill small {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #059669;
+  margin-top: 2px;
+}
+
+.qv-pill:hover, .qv-pill.active {
+  border-color: var(--accent);
+  background: rgba(31, 75, 63, 0.1);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .qv-pill:hover,
+[data-theme="dark"] .qv-pill.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.qv-pincode-box {
+  margin-bottom: 20px;
+}
+
+.qv-pin-input-wrap {
+  display: flex;
+  gap: 8px;
+}
+
+.qv-pin-input-wrap input {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--input-bg);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.qv-pin-input-wrap button {
+  background: #0284c7;
+  color: white;
+  border: 0;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.qv-pin-result {
+  margin-top: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.qv-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: rgba(0,0,0,0.02);
+  padding: 14px;
+  border-radius: 14px;
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+}
+
+[data-theme="dark"] .qv-specs-grid {
+  background: #1a243a;
+  border-color: #2e3d5b;
+}
+
+.qv-spec-item {
+  font-size: 12px;
+}
+
+.qv-spec-item .label {
+  color: var(--muted);
+  font-weight: 700;
+  display: block;
+}
+
+.qv-spec-item .val {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.qv-cta-row {
+  display: flex;
+  gap: 10px;
+}
+
+.qv-wishlist-btn {
+  padding: 12px 18px;
+  white-space: nowrap;
+}
+
+/* Reviews Tab inside Quick View */
+.qv-reviews-container {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.qv-reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.qv-reviews-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.qv-review-form {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--line);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+[data-theme="dark"] .qv-review-form {
+  background: #1a243a;
+}
+
+.qv-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.qv-form-grid input, .qv-form-grid select, .qv-form-grid textarea {
+  border: 1px solid var(--line);
+  background: var(--input-bg);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.qv-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.qv-review-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  border-radius: 14px;
+}
+
+.qv-rev-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.qv-rev-author {
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.qv-verified-badge {
+  color: #059669;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+.qv-rev-date {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.qv-rev-title {
+  font-weight: 800;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.qv-rev-comment {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Recently Viewed Products Horizontal Carousel
+   ========================================================================== */
+.recently-viewed-section {
+  margin-top: 50px;
+}
+
+.recently-viewed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.recent-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-color: var(--accent);
+}
+
+.recent-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.recent-card h5 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-card .price {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Printable / PDF Tax Invoice Modal
+   ========================================================================== */
+.invoice-modal-card {
+  max-width: 800px;
+  width: 94vw;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 20px;
+  padding: 40px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+}
+
+.tax-invoice-paper {
+  font-family: Inter, sans-serif;
+  color: #0f172a;
+}
+
+.inv-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.inv-logo-box h2 {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 0;
+  color: #1f4b3f;
+}
+
+.inv-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.inv-table th {
+  background: #f8fafc;
+  padding: 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  border-bottom: 2px solid #cbd5e1;
+  color: #475569;
+}
+
+.inv-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.inv-totals-box {
+  margin-left: auto;
+  width: 320px;
+  font-size: 13px;
+}
+
+.inv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.inv-row.grand-total {
+  font-size: 16px;
+  font-weight: 900;
+  border-top: 2px solid #0f172a;
+  padding-top: 10px;
+  color: #1f4b3f;
+}
+
+.inv-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #taxInvoiceModal, #taxInvoiceModal * { visibility: visible; }
+  #taxInvoiceModal { position: absolute; left: 0; top: 0; width: 100%; }
+  .inv-actions, .close { display: none !important; }
+}
+
+/* ==========================================================================
+   Digital KYC & Subscription Management Modals
+   ========================================================================== */
+.kyc-modal-card, .tenure-modal-card {
+  max-width: 540px;
+  width: 92vw;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 32px;
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+}
+
+.kyc-upload-zone {
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  margin: 18px 0;
+  background: rgba(0,0,0,0.01);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.kyc-upload-zone:hover {
+  border-color: #0284c7;
+}
+
+@media (max-width: 768px) {
+  .quickview-grid {
+    grid-template-columns: 1fr;
+  }
+  .quickview-media img {
+    height: 240px;
+  }
+  .qv-tenure-pills {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .invoice-modal-card {
+    padding: 20px;
+  }
+  .inv-meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .inv-totals-box {
+    width: 100%;
+  }
+}
+
+
 
 
 

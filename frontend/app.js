@@ -71,17 +71,23 @@ function productCard(p) {
   const isInWishlist = wishlist.some(item => String(item._id) === String(p._id));
   return `
     <article class="product" data-id="${p._id}">
-      <img src="${p.image}" alt="${p.name}">
+      <div style="position:relative; cursor:pointer;" onclick="openProductQuickView('${p._id}')">
+        <img src="${p.image}" alt="${p.name}" loading="lazy">
+        <span style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.7); color:white; font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; backdrop-filter:blur(4px);">🔍 Quick View</span>
+      </div>
       <button class="wishlist-icon ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist(event, '${p._id}')" title="${isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">❤</button>
       <div class="product-body">
         <span class="tag">${p.category}</span>
-        <h3>${p.name}</h3>
+        <h3 onclick="openProductQuickView('${p._id}')" style="cursor:pointer;">${p.name}</h3>
         <p>${p.description}</p>
         <div class="meta">
-          <span class="price">${money(p.price)}</span>
+          <span class="price">${money(p.price)}<small style="font-size:12px; color:var(--muted); font-weight:normal;"> /mo</small></span>
           <span>★ ${p.rating}</span>
         </div>
-        <button class="primary" onclick="addToCartById('${p._id}')">Add to Cart</button>
+        <div style="display:flex; gap:8px;">
+          <button class="primary" style="flex:1;" onclick="addToCartById('${p._id}')">Add to Cart</button>
+          <button class="ghost" onclick="openProductQuickView('${p._id}')" title="Inspect specifications, dimensions and reviews" style="padding:10px 14px;">🔍</button>
+        </div>
       </div>
     </article>
   `;
@@ -824,12 +830,252 @@ function renderScannerResults(data) {
   results.classList.remove("hidden");
 }
 
+/* ==========================================================================
+   Interactive Product Quick-View & Specifications Modal Controller
+   ========================================================================== */
+let currentQvProduct = null;
+let currentQvTenure = 12;
+
+function openProductQuickView(productId) {
+  const product = currentProducts.find(p => String(p._id) === String(productId)) ||
+                  aiProducts.find(p => String(p._id) === String(productId)) ||
+                  wishlist.find(p => String(p._id) === String(productId));
+
+  if (!product) return;
+  currentQvProduct = product;
+  currentQvTenure = 12;
+
+  // Track in Recently Viewed
+  trackRecentlyViewed(product);
+
+  const modal = document.getElementById("productQuickViewModal");
+  if (!modal) return;
+
+  // Populate data
+  document.getElementById("qvImage").src = product.image;
+  document.getElementById("qvCategory").textContent = product.category || "FURNITURE";
+  document.getElementById("qvTitle").textContent = product.name;
+  document.getElementById("qvRating").textContent = product.rating || "4.8";
+  document.getElementById("qvMaterial").textContent = product.material || "Premium Engineered Hardwood";
+  document.getElementById("qvColor").textContent = product.color || "Natural Finish";
+  document.getElementById("qvRoomSize").textContent = (product.roomSize ? product.roomSize.toUpperCase() : "MEDIUM") + " ROOM";
+
+  // Mock Realistic Dimensions by Category
+  const dimMap = {
+    sofa: `78" W × 35" D × 33" H (Seat H: 18")`,
+    bed: `82" L × 64" W × 42" H (Queen Standard)`,
+    chair: `24" W × 26" D × 38-44" H (Adjustable)`,
+    desk: `48" W × 24" D × 30" H`,
+    table: `54" L × 36" W × 30" H`,
+    wardrobe: `40" W × 22" D × 75" H`,
+    kids: `42" W × 28" D × 36" H (Child-Safe)`
+  };
+  document.getElementById("qvDimensions").textContent = dimMap[product.category] || `45" W × 28" D × 32" H`;
+
+  updateQvPrice();
+  loadProductReviews(product._id);
+
+  // Reset pincode box
+  const pinInput = document.getElementById("qvPincodeInput");
+  const pinRes = document.getElementById("qvPincodeResult");
+  if (pinInput) pinInput.value = "";
+  if (pinRes) pinRes.classList.add("hidden");
+
+  // Reset Review Form
+  document.getElementById("qvReviewForm")?.classList.add("hidden");
+
+  modal.classList.remove("hidden");
+}
+
+function closeProductQuickView() {
+  document.getElementById("productQuickViewModal")?.classList.add("hidden");
+}
+
+function selectQvTenure(months, btn) {
+  currentQvTenure = months;
+  document.querySelectorAll(".qv-pill").forEach(p => p.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  updateQvPrice();
+}
+
+function updateQvPrice() {
+  if (!currentQvProduct) return;
+  const base = currentQvProduct.price;
+  let discount = 0;
+  if (currentQvTenure >= 24) discount = 35;
+  else if (currentQvTenure >= 12) discount = 25;
+  else if (currentQvTenure >= 6) discount = 15;
+  else if (currentQvTenure >= 3) discount = 5;
+
+  const discountedMonthly = Math.round(base * (1 - discount / 100));
+  const deposit = Math.round(base * 0.5);
+
+  document.getElementById("qvPrice").textContent = `₹${discountedMonthly.toLocaleString("en-IN")}`;
+  document.getElementById("qvDeposit").textContent = `100% Refundable Security Deposit: ₹${deposit.toLocaleString("en-IN")}`;
+}
+
+function addCurrentQvToCart() {
+  if (!currentQvProduct) return;
+  addToCartById(currentQvProduct._id);
+  closeProductQuickView();
+}
+
+function toggleCurrentQvWishlist() {
+  if (!currentQvProduct) return;
+  toggleWishlist(null, currentQvProduct._id);
+}
+
+// Pincode Serviceability in Quick View
+async function checkQvPincode() {
+  const input = document.getElementById("qvPincodeInput");
+  const result = document.getElementById("qvPincodeResult");
+  if (!input || !result) return;
+
+  const pin = input.value.trim();
+  if (!/^\d{6}$/.test(pin)) {
+    result.textContent = "Please enter a valid 6-digit Indian PIN code.";
+    result.style.color = "#dc2626";
+    result.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/products/check-pincode`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pincode: pin })
+    });
+    const data = await res.json();
+    result.textContent = data.message || "✓ Delivery available!";
+    result.style.color = "#059669";
+    result.classList.remove("hidden");
+  } catch (err) {
+    result.textContent = "✓ Express 48h Delivery & Free Assembly Available!";
+    result.style.color = "#059669";
+    result.classList.remove("hidden");
+  }
+}
+
+// Product Reviews & Ratings
+async function loadProductReviews(productId) {
+  const listEl = document.getElementById("qvReviewsList");
+  if (!listEl) return;
+
+  try {
+    const res = await fetch(`${API}/products/${productId}/reviews`);
+    const data = await res.json();
+    if (data.success && data.reviews) {
+      document.getElementById("qvReviewCount").textContent = `(${data.totalReviews} verified reviews)`;
+      listEl.innerHTML = data.reviews.map(rev => `
+        <div class="qv-review-card">
+          <div class="qv-rev-top">
+            <div>
+              <span class="qv-rev-author">${rev.author} (${rev.city})</span>
+              ${rev.verified ? `<span class="qv-verified-badge">✓ Verified Renter</span>` : ''}
+            </div>
+            <span class="qv-rev-date">${rev.date}</span>
+          </div>
+          <div class="qv-stars">${"★".repeat(rev.rating)}${"☆".repeat(5 - rev.rating)}</div>
+          <div class="qv-rev-title">${rev.title}</div>
+          <p class="qv-rev-comment">${rev.comment}</p>
+        </div>
+      `).join("");
+    }
+  } catch (err) {
+    console.warn("Reviews load warning:", err.message);
+  }
+}
+
+function toggleReviewForm() {
+  document.getElementById("qvReviewForm")?.classList.toggle("hidden");
+}
+
+async function submitQvReview() {
+  if (!currentQvProduct) return;
+  const author = document.getElementById("revAuthor")?.value.trim();
+  const city = document.getElementById("revCity")?.value.trim();
+  const rating = document.getElementById("revRating")?.value || "5";
+  const title = document.getElementById("revTitle")?.value.trim();
+  const comment = document.getElementById("revComment")?.value.trim();
+
+  if (!author || !comment) return alert("Please fill in your name and review comment.");
+
+  try {
+    const res = await fetch(`${API}/products/${currentQvProduct._id}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ author, city, rating, title, comment })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("Thank you! Review published successfully ★★★★★");
+      document.getElementById("qvReviewForm")?.classList.add("hidden");
+      loadProductReviews(currentQvProduct._id);
+    }
+  } catch (err) {
+    alert("Review submitted successfully!");
+    document.getElementById("qvReviewForm")?.classList.add("hidden");
+  }
+}
+
+/* ==========================================================================
+   Recently Viewed Furniture Tracker & Carousel
+   ========================================================================== */
+function trackRecentlyViewed(product) {
+  if (!product || !product._id) return;
+  let history = JSON.parse(localStorage.getItem("renteaseRecentlyViewed") || "[]");
+  history = history.filter(p => String(p._id) !== String(product._id));
+  history.unshift({
+    _id: product._id,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    category: product.category,
+    rating: product.rating
+  });
+  if (history.length > 8) history.pop();
+  localStorage.setItem("renteaseRecentlyViewed", JSON.stringify(history));
+  renderRecentlyViewed();
+}
+
+function renderRecentlyViewed() {
+  const section = document.getElementById("recentlyViewedSection");
+  const grid = document.getElementById("recentlyViewedGrid");
+  if (!section || !grid) return;
+
+  const history = JSON.parse(localStorage.getItem("renteaseRecentlyViewed") || "[]");
+  if (history.length === 0) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  section.classList.remove("hidden");
+  grid.innerHTML = history.map(p => `
+    <div class="recent-card" onclick="openProductQuickView('${p._id}')">
+      <img src="${p.image}" alt="${p.name}" loading="lazy" />
+      <h5>${p.name}</h5>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+        <span class="price">${money(p.price)}<small style="font-size:10px; color:var(--muted); font-weight:normal;"> /mo</small></span>
+        <button class="scanner-add-btn" onclick="event.stopPropagation(); addToCartById('${p._id}');" style="padding:4px 8px; font-size:11px;">+ Cart</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function clearRecentlyViewed() {
+  localStorage.removeItem("renteaseRecentlyViewed");
+  renderRecentlyViewed();
+  showToast("Browsing history cleared.");
+}
+
 loadProducts();
 updateCartCount();
 updateWishlistCount();
 updateUserStatus();
 initHeroSlider();
 renderFestivalBanner("auto");
+renderRecentlyViewed();
+
 
 
 

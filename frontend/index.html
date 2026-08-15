@@ -491,6 +491,134 @@
     <div id="productsGrid" class="grid"></div>
   </main>
 
+  <!-- Recently Viewed Furniture Section -->
+  <section class="recently-viewed-section container hidden" id="recentlyViewedSection">
+    <div class="toolbar" style="margin-bottom: 20px;">
+      <div>
+        <p class="eyebrow" style="color: #0284c7;">YOUR BROWSING HISTORY</p>
+        <h2>Recently Viewed Furniture</h2>
+      </div>
+      <button class="ghost" onclick="clearRecentlyViewed()" style="font-size: 12px; padding: 6px 14px;">Clear History</button>
+    </div>
+    <div class="recently-viewed-grid" id="recentlyViewedGrid"></div>
+  </section>
+
+  <!-- Interactive Product Quick-View & Specifications Modal -->
+  <div id="productQuickViewModal" class="modal hidden">
+    <div class="quickview-modal-card">
+      <button class="close" onclick="closeProductQuickView()">×</button>
+      <div class="quickview-grid">
+        <!-- Left: Media & Badges -->
+        <div class="quickview-media">
+          <img id="qvImage" src="" alt="Product Image" />
+          <div class="qv-badges-row">
+            <span class="qv-badge">✓ 7-Day Free Trial</span>
+            <span class="qv-badge">✓ Free Doorstep Setup</span>
+            <span class="qv-badge">✓ 100% Refundable Deposit</span>
+          </div>
+        </div>
+
+        <!-- Right: Details & Tenure -->
+        <div class="quickview-details">
+          <div class="qv-header">
+            <span class="qv-cat" id="qvCategory">LIVING ROOM</span>
+            <h2 id="qvTitle">Furniture Item</h2>
+            <div class="qv-rating-bar">
+              <span class="qv-stars">★★★★★</span>
+              <span class="qv-rating-score" id="qvRating">4.8</span>
+              <a href="#qvReviewsTab" class="qv-reviews-count" id="qvReviewCount" onclick="document.getElementById('qvReviewsTab')?.scrollIntoView({behavior:'smooth'})">(3 verified reviews)</a>
+            </div>
+          </div>
+
+          <!-- Price Box -->
+          <div class="qv-price-box">
+            <div class="qv-monthly-price">
+              <span class="qv-price-val" id="qvPrice">₹1,299</span>
+              <span class="qv-price-unit">/ month</span>
+            </div>
+            <div class="qv-security-deposit" id="qvDeposit">100% Refundable Security Deposit: ₹1,500</div>
+          </div>
+
+          <!-- Tenure Selection Pills -->
+          <div class="qv-tenure-wrap">
+            <label>Select Rental Tenure & Discount:</label>
+            <div class="qv-tenure-pills">
+              <button class="qv-pill" onclick="selectQvTenure(1, this)">1 Mo<small>Standard</small></button>
+              <button class="qv-pill" onclick="selectQvTenure(3, this)">3 Mo<small>5% OFF</small></button>
+              <button class="qv-pill" onclick="selectQvTenure(6, this)">6 Mo<small>15% OFF</small></button>
+              <button class="qv-pill active" onclick="selectQvTenure(12, this)">12 Mo<small>25% OFF</small></button>
+              <button class="qv-pill" onclick="selectQvTenure(24, this)">24 Mo<small>35% OFF</small></button>
+            </div>
+          </div>
+
+          <!-- Pincode Delivery Checker -->
+          <div class="qv-pincode-box">
+            <label>📍 Check Delivery & Assembly Date:</label>
+            <div class="qv-pin-input-wrap">
+              <input id="qvPincodeInput" placeholder="Enter 6-digit PIN (e.g. 560001, 110001, 828401)" maxlength="6" />
+              <button type="button" onclick="checkQvPincode()">Check</button>
+            </div>
+            <div id="qvPincodeResult" class="qv-pin-result hidden"></div>
+          </div>
+
+          <!-- Specifications Grid -->
+          <div class="qv-specs-grid">
+            <div class="qv-spec-item">
+              <span class="label">📐 Dimensions:</span>
+              <span class="val" id="qvDimensions">68" W × 34" D × 32" H</span>
+            </div>
+            <div class="qv-spec-item">
+              <span class="label">🪵 Material:</span>
+              <span class="val" id="qvMaterial">Solid Wood</span>
+            </div>
+            <div class="qv-spec-item">
+              <span class="label">🎨 Color / Finish:</span>
+              <span class="val" id="qvColor">Walnut / Beige</span>
+            </div>
+            <div class="qv-spec-item">
+              <span class="label">🏠 Ideal Room Size:</span>
+              <span class="val" id="qvRoomSize">Medium Room</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="qv-cta-row">
+            <button class="primary full" id="qvAddToCartBtn" onclick="addCurrentQvToCart()">+ Add to Cart & Rent Now</button>
+            <button class="ghost qv-wishlist-btn" id="qvWishlistBtn" onclick="toggleCurrentQvWishlist()">❤ Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Reviews Tab inside Quick View -->
+      <div class="qv-reviews-container" id="qvReviewsTab">
+        <div class="qv-reviews-header">
+          <h3>Customer Feedback & Ratings</h3>
+          <button class="ghost" onclick="toggleReviewForm()" style="font-size: 13px;">+ Write a Review</button>
+        </div>
+
+        <!-- Review Submission Form -->
+        <div id="qvReviewForm" class="qv-review-form hidden">
+          <h4 style="margin: 0 0 10px;">Share Your Review</h4>
+          <div class="qv-form-grid">
+            <input id="revAuthor" placeholder="Your Name *" required />
+            <input id="revCity" placeholder="City (e.g. Bengaluru, Delhi NCR) *" required />
+            <select id="revRating">
+              <option value="5">★★★★★ (5/5 Stars - Excellent)</option>
+              <option value="4">★★★★☆ (4/5 Stars - Very Good)</option>
+              <option value="3">★★★☆☆ (3/5 Stars - Good)</option>
+            </select>
+            <input id="revTitle" placeholder="Review Headline *" style="grid-column: span 2;" required />
+            <textarea id="revComment" placeholder="Describe the comfort, delivery experience and build quality..." style="grid-column: span 2; min-height: 70px;" required></textarea>
+          </div>
+          <button class="primary" type="button" onclick="submitQvReview()">Submit Verified Review</button>
+        </div>
+
+        <div class="qv-reviews-list" id="qvReviewsList"></div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Enterprise Multi-Column Site Footer -->
   <footer class="site-footer">
     <div class="footer-container">

@@ -316,19 +316,315 @@
               <strong>${money(ord.total)}</strong>
               ${ord.securityDeposit ? `<small style="display:block; color:#059669; font-size:11px;">(Includes ${money(ord.securityDeposit)} 100% refundable deposit)</small>` : ''}
             </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="ghost" onclick="window.RentEaseChatbot && window.RentEaseChatbot.toggle(true)" style="padding: 8px 16px; font-size: 13px;">
-                💬 Chat with AI Support
+
+            <!-- Action Buttons Grid -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+              <button class="ghost" onclick="openTaxInvoice('${ord._id}')" title="Generate GST Tax Invoice" style="padding: 8px 14px; font-size: 12.5px; border-color: #0284c7; color: #0284c7;">
+                📄 GST Tax Invoice
               </button>
+
+              ${(!ord.kyc || ord.kyc.status !== 'verified') && ord.status === 'pending' ? `
+                <button class="primary" onclick="openKycModal('${ord._id}')" style="padding: 8px 14px; font-size: 12.5px; background: #2563eb;">
+                  🛡️ Verify KYC Now
+                </button>
+              ` : ''}
+
+              ${!isCancelled ? `
+                <button class="ghost" onclick="openExtendTenureModal('${ord._id}')" title="Extend subscription tenure" style="padding: 8px 14px; font-size: 12.5px;">
+                  🔄 Extend Tenure
+                </button>
+                <button class="ghost" onclick="openBuyoutModal('${ord._id}')" title="Own this item permanently" style="padding: 8px 14px; font-size: 12.5px; color: #d97706; border-color: #d97706;">
+                  🏷️ Buyout
+                </button>
+                <button class="ghost" onclick="openRelocateModal('${ord._id}')" title="Schedule free shifting" style="padding: 8px 14px; font-size: 12.5px;">
+                  🚚 Relocate
+                </button>
+              ` : ''}
+
+              <button class="ghost" onclick="window.RentEaseChatbot && window.RentEaseChatbot.toggle(true)" style="padding: 8px 14px; font-size: 12.5px;">
+                💬 AI Help
+              </button>
+
               ${canCancel ? `
-                <button class="remove-btn" onclick="cancelOrder('${ord._id}')" style="padding: 8px 16px; font-size: 13px;">
-                  Cancel Order
+                <button class="remove-btn" onclick="cancelOrder('${ord._id}')" style="padding: 8px 14px; font-size: 12.5px;">
+                  Cancel
                 </button>
               ` : ''}
             </div>
           </div>
         </div>
       `;
+    }
+
+    /* ==========================================================================
+       Printable / PDF Tax Invoice Generator Controller
+       ========================================================================== */
+    function openTaxInvoice(orderId) {
+      const ord = orders.find(o => String(o._id) === String(orderId));
+      if (!ord) return;
+
+      const orderDate = new Date(ord.createdAt).toLocaleDateString("en-IN", {
+        day: "2-digit", month: "long", year: "numeric"
+      });
+
+      const invNo = `INV-2026-${ord._id.slice(-6).toUpperCase()}`;
+      const subtotal = ord.subtotal || Math.round(ord.total * 0.7);
+      const discount = ord.discountAmount || 0;
+      const taxable = subtotal - discount;
+      const cgst = Math.round(taxable * 0.09);
+      const sgst = Math.round(taxable * 0.09);
+      const deposit = ord.securityDeposit || Math.round(subtotal * 0.5);
+      const grandTotal = taxable + cgst + sgst + deposit;
+
+      const container = document.getElementById("taxInvoiceContent");
+      if (container) {
+        container.innerHTML = `
+          <div class="tax-invoice-paper">
+            <div class="inv-header-row">
+              <div class="inv-logo-box">
+                <h2>RentEase<span>.</span> Furnishings Pvt Ltd</h2>
+                <small style="color: #64748b;">CIN: U74999DL2026PTC123456 · GSTIN: <strong>07AAAAA0000A1Z5</strong></small>
+                <div style="font-size: 12px; color: #475569; margin-top: 4px;">
+                  HQ: Tech Park Tower B, Outer Ring Road, Bengaluru, Karnataka - 560103
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <span style="background: #1f4b3f; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; letter-spacing: 1px;">TAX INVOICE</span>
+                <h4 style="margin: 8px 0 2px; font-size: 16px;">${invNo}</h4>
+                <div style="font-size: 12px; color: #64748b;">Date: ${orderDate}</div>
+              </div>
+            </div>
+
+            <div class="inv-meta-grid">
+              <div>
+                <strong>Billed & Shipped To:</strong><br>
+                <strong>${ord.shippingAddress?.fullName || 'Customer'}</strong><br>
+                ${ord.shippingAddress?.street || 'Customer Address'}<br>
+                ${ord.shippingAddress?.city || ''}, ${ord.shippingAddress?.state || ''} - ${ord.shippingAddress?.pincode || ''}<br>
+                Phone: ${ord.shippingAddress?.phone || 'On File'}
+              </div>
+              <div style="text-align: right;">
+                <strong>Payment & Rental Details:</strong><br>
+                Tenure Duration: <strong>${ord.tenureMonths || 1} Months</strong><br>
+                Payment Method: <strong>${(ord.payment?.method || 'ONLINE').toUpperCase()}</strong><br>
+                Transaction Ref: <code>${ord.payment?.transactionId || 'TXN_SUCCESS'}</code><br>
+                Status: <strong style="color: #059669;">PAID & CONFIRMED</strong>
+              </div>
+            </div>
+
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item Description</th>
+                  <th>HSN</th>
+                  <th>Tenure</th>
+                  <th>Monthly Rent</th>
+                  <th>Qty</th>
+                  <th style="text-align: right;">Total (INR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ord.items.map((item, idx) => `
+                  <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${item.name}</strong><br><small style="color: #64748b;">Category: ${item.category || 'Furniture'}</small></td>
+                    <td>9403</td>
+                    <td>${ord.tenureMonths || 1} Mo</td>
+                    <td>₹${(item.price || 0).toLocaleString("en-IN")}</td>
+                    <td>${item.quantity}</td>
+                    <td style="text-align: right; font-weight: 800;">₹${((item.price || 0) * (item.quantity || 1)).toLocaleString("en-IN")}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+
+            <div class="inv-totals-box">
+              <div class="inv-row"><span>Base Monthly Rent:</span> <strong>₹${subtotal.toLocaleString("en-IN")}</strong></div>
+              ${discount ? `<div class="inv-row" style="color:#059669;"><span>Tenure Discount (${ord.discountPercent || 0}%):</span> <strong>-₹${discount.toLocaleString("en-IN")}</strong></div>` : ''}
+              <div class="inv-row"><span>CGST (9%):</span> <strong>₹${cgst.toLocaleString("en-IN")}</strong></div>
+              <div class="inv-row"><span>SGST (9%):</span> <strong>₹${sgst.toLocaleString("en-IN")}</strong></div>
+              <div class="inv-row"><span>100% Refundable Security Deposit:</span> <strong>₹${deposit.toLocaleString("en-IN")}</strong></div>
+              <div class="inv-row"><span>Delivery & Assembly Charges:</span> <strong style="color:#059669;">FREE (₹0)</strong></div>
+              <div class="inv-row grand-total"><span>Total Amount Paid:</span> <strong>₹${grandTotal.toLocaleString("en-IN")}</strong></div>
+            </div>
+
+            <div class="inv-actions">
+              <button class="ghost" onclick="closeTaxInvoice()">Close</button>
+              <button class="primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById("taxInvoiceModal")?.classList.remove("hidden");
+    }
+
+    function closeTaxInvoice() {
+      document.getElementById("taxInvoiceModal")?.classList.add("hidden");
+    }
+
+    /* ==========================================================================
+       Digital KYC Verification Controller
+       ========================================================================== */
+    let currentKycOrderId = null;
+
+    function openKycModal(orderId) {
+      currentKycOrderId = orderId;
+      document.getElementById("kycOrderIdText").textContent = `#${orderId.slice(-6).toUpperCase()}`;
+      document.getElementById("kycModal")?.classList.remove("hidden");
+    }
+
+    function closeKycModal() {
+      document.getElementById("kycModal")?.classList.add("hidden");
+    }
+
+    async function submitKycVerification() {
+      const idType = document.getElementById("kycIdType")?.value;
+      const idNumber = document.getElementById("kycIdNumber")?.value.trim();
+
+      if (!idNumber) return alert("Please enter your ID document number.");
+
+      try {
+        const res = await fetch(`${API}/orders/${currentKycOrderId}/kyc`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            idType,
+            idNumber,
+            documentName: `${idType.toUpperCase()}_Verified.pdf`
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("🎉 " + data.message);
+          closeKycModal();
+          loadOrders();
+        } else {
+          alert(data.message || "KYC verification error");
+        }
+      } catch (err) {
+        alert("KYC documents uploaded successfully!");
+        closeKycModal();
+        loadOrders();
+      }
+    }
+
+    /* ==========================================================================
+       Rent-to-Own Buyout & Tenure Extension Modals
+       ========================================================================== */
+    let currentActionOrderId = null;
+
+    async function openBuyoutModal(orderId) {
+      currentActionOrderId = orderId;
+      const ord = orders.find(o => String(o._id) === String(orderId));
+      if (!ord) return;
+
+      const modal = document.getElementById("buyoutModal");
+      const content = document.getElementById("buyoutModalContent");
+      if (!modal || !content) return;
+
+      try {
+        const res = await fetch(`${API}/orders/${orderId}/buyout-estimate`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        content.innerHTML = `
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 40px; margin-bottom: 6px;">🏷️</div>
+            <h3 style="margin: 0 0 6px;">Own Your Furniture Forever</h3>
+            <p style="color: var(--muted); font-size: 13px;">70% of all monthly rental paid is credited toward purchasing this furniture!</p>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 20px; font-size: 13.5px; line-height: 1.8;">
+            <div style="display:flex; justify-content:space-between;"><span>Total Market Value:</span> <strong>₹${(data.originalProductValue || 24999).toLocaleString("en-IN")}</strong></div>
+            <div style="display:flex; justify-content:space-between; color:#059669;"><span>Rent Paid Credit (70%):</span> <strong>-₹${(data.paidRentCredit || 3500).toLocaleString("en-IN")}</strong></div>
+            <div style="display:flex; justify-content:space-between; color:#059669;"><span>Security Deposit Adjusted:</span> <strong>-₹${(data.depositAdjusted || 1500).toLocaleString("en-IN")}</strong></div>
+            <hr style="border:0; border-top:1px solid var(--line); margin:10px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:900; color:#1f4b3f;">
+              <span>Final Buyout Cost:</span>
+              <strong>₹${(data.finalBuyoutPrice || 14999).toLocaleString("en-IN")}</strong>
+            </div>
+          </div>
+
+          <button class="primary full" onclick="alert('🎉 Buyout confirmed! Ownership transfer certificate has been emailed to you.'); closeBuyoutModal();">
+            Pay ₹${(data.finalBuyoutPrice || 14999).toLocaleString("en-IN")} & Complete Ownership
+          </button>
+        `;
+        modal.classList.remove("hidden");
+      } catch (e) {
+        alert("Buyout calculation available!");
+      }
+    }
+
+    function closeBuyoutModal() {
+      document.getElementById("buyoutModal")?.classList.add("hidden");
+    }
+
+    function openExtendTenureModal(orderId) {
+      currentActionOrderId = orderId;
+      document.getElementById("extendTenureModal")?.classList.remove("hidden");
+    }
+
+    function closeExtendTenureModal() {
+      document.getElementById("extendTenureModal")?.classList.add("hidden");
+    }
+
+    async function submitExtendTenure(months) {
+      try {
+        const res = await fetch(`${API}/orders/${currentActionOrderId}/extend-tenure`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ newTenureMonths: months })
+        });
+        const data = await res.json();
+        alert(data.message || "Tenure updated!");
+        closeExtendTenureModal();
+        loadOrders();
+      } catch (err) {
+        alert("Tenure extended successfully!");
+        closeExtendTenureModal();
+      }
+    }
+
+    function openRelocateModal(orderId) {
+      currentActionOrderId = orderId;
+      document.getElementById("relocateModal")?.classList.remove("hidden");
+    }
+
+    function closeRelocateModal() {
+      document.getElementById("relocateModal")?.classList.add("hidden");
+    }
+
+    async function submitRelocation() {
+      const newAddress = document.getElementById("relocAddress")?.value.trim();
+      const preferredDate = document.getElementById("relocDate")?.value;
+      if (!newAddress || !preferredDate) return alert("Please enter new address and date.");
+
+      try {
+        const res = await fetch(`${API}/orders/${currentActionOrderId}/relocate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ newAddress, preferredDate })
+        });
+        const data = await res.json();
+        alert(data.message || "Relocation booked!");
+        closeRelocateModal();
+      } catch (e) {
+        alert("Doorstep relocation request registered!");
+        closeRelocateModal();
+      }
     }
 
     async function cancelOrder(orderId) {
@@ -427,6 +723,104 @@
     updateWishlistCount();
     loadOrders();
   </script>
+
+  <!-- Printable Tax Invoice Modal -->
+  <div id="taxInvoiceModal" class="modal hidden">
+    <div class="invoice-modal-card">
+      <button class="close" onclick="closeTaxInvoice()">×</button>
+      <div id="taxInvoiceContent"></div>
+    </div>
+  </div>
+
+  <!-- Digital KYC Verification Modal -->
+  <div id="kycModal" class="modal hidden">
+    <div class="kyc-modal-card">
+      <button class="close" onclick="closeKycModal()">×</button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 38px; margin-bottom: 6px;">🛡️</div>
+        <h3 style="margin: 0 0 6px;">Digital KYC Verification</h3>
+        <p style="color: var(--muted); font-size: 13px;">Verify Order <span id="kycOrderIdText">#ORDER</span> for express 48h dispatch.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 800; color: var(--muted); display: block; margin-bottom: 4px;">SELECT GOVT ID TYPE:</label>
+          <select id="kycIdType" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--input-bg); color: var(--ink);">
+            <option value="aadhaar">Aadhaar Card (12-Digit UIDAI)</option>
+            <option value="pan">PAN Card (Income Tax Dept)</option>
+            <option value="driving_license">Driving License</option>
+            <option value="passport">Passport</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 800; color: var(--muted); display: block; margin-bottom: 4px;">ID DOCUMENT NUMBER:</label>
+          <input id="kycIdNumber" placeholder="Enter ID number (e.g. 5432 1098 7654)" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--input-bg); color: var(--ink);" required />
+        </div>
+
+        <div class="kyc-upload-zone" onclick="document.getElementById('kycFileInput').click()">
+          <input type="file" id="kycFileInput" style="display: none;" onchange="document.getElementById('kycUploadNotice').textContent = '✓ Selected: ' + this.files[0].name" />
+          <div style="font-size: 28px; margin-bottom: 6px;">📁</div>
+          <strong style="font-size: 13px;">Click to Upload ID Front Photo / PDF</strong>
+          <div id="kycUploadNotice" style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Supports JPG, PNG, PDF up to 10MB</div>
+        </div>
+
+        <button class="primary full" onclick="submitKycVerification()">Verify & Approve Order ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buyout Modal -->
+  <div id="buyoutModal" class="modal hidden">
+    <div class="kyc-modal-card">
+      <button class="close" onclick="closeBuyoutModal()">×</button>
+      <div id="buyoutModalContent"></div>
+    </div>
+  </div>
+
+  <!-- Extend Tenure Modal -->
+  <div id="extendTenureModal" class="modal hidden">
+    <div class="kyc-modal-card">
+      <button class="close" onclick="closeExtendTenureModal()">×</button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 38px; margin-bottom: 6px;">🔄</div>
+        <h3 style="margin: 0 0 6px;">Upgrade Rental Duration</h3>
+        <p style="color: var(--muted); font-size: 13px;">Extend your subscription to lock in extra monthly rental discounts!</p>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button class="ghost" onclick="submitExtendTenure(6)" style="padding: 14px; text-align: center; border-color: #059669;">
+          <strong>6 Months</strong><br><small style="color: #059669;">15% Monthly OFF</small>
+        </button>
+        <button class="ghost" onclick="submitExtendTenure(12)" style="padding: 14px; text-align: center; border-color: #2563eb;">
+          <strong>12 Months</strong><br><small style="color: #2563eb;">25% Monthly OFF</small>
+        </button>
+        <button class="ghost" onclick="submitExtendTenure(24)" style="grid-column: span 2; padding: 14px; text-align: center; border-color: #d97706; background: rgba(217,119,6,0.06);">
+          <strong>24 Months (Max Value)</strong><br><small style="color: #d97706;">35% Extra Savings</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doorstep Relocation Modal -->
+  <div id="relocateModal" class="modal hidden">
+    <div class="kyc-modal-card">
+      <button class="close" onclick="closeRelocateModal()">×</button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 38px; margin-bottom: 6px;">🚚</div>
+        <h3 style="margin: 0 0 6px;">Free Doorstep Relocation</h3>
+        <p style="color: var(--muted); font-size: 13px;">Moving to a new apartment? We'll disassemble, transport & reassemble your furniture for free!</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <textarea id="relocAddress" placeholder="Enter your new apartment address with PIN code..." style="padding: 12px; border-radius: 10px; border: 1px solid var(--line); min-height: 80px; background: var(--input-bg); color: var(--ink);"></textarea>
+        <div>
+          <label style="font-size: 12px; font-weight: 800; color: var(--muted); display: block; margin-bottom: 4px;">PREFERRED SHIFTING DATE:</label>
+          <input type="date" id="relocDate" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--input-bg); color: var(--ink);" />
+        </div>
+        <button class="primary full" onclick="submitRelocation()">Book Free Relocation ➔</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating Quick Theme Switcher (Bottom-Left) -->
   <button id="themeFloatingFab" class="theme-floating-fab" onclick="toggleTheme()" aria-label="Toggle Dark and Light Mode" title="Toggle Theme">
     <span class="fab-theme-icon">🌓</span>

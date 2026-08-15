@@ -276,6 +276,11 @@
           <td>
             <strong>${ord.user ? ord.user.name : (ord.shippingAddress ? ord.shippingAddress.fullName : 'Customer')}</strong><br>
             <small style="color: var(--muted);">${ord.user ? ord.user.email : ''}</small>
+            ${ord.kyc && ord.kyc.idNumber ? `
+              <div style="margin-top: 4px; font-size: 11px; color: #0284c7;">
+                🛡️ <strong>${ord.kyc.idType.toUpperCase()}</strong>: ${ord.kyc.idNumber}
+              </div>
+            ` : '<div style="margin-top: 4px; font-size: 11px; color: #eab308;">⚠️ KYC Pending</div>'}
           </td>
           <td>
             <small>${ord.items.map(i => `${i.name} (x${i.quantity})`).join(", ")}</small>
@@ -288,9 +293,9 @@
             </span>
           </td>
           <td>
-            <select onchange="updateOrderStatus('${ord._id}', this.value)" style="padding: 6px 10px; border-radius: 8px; font-weight: 700; border: 1.5px solid var(--line);">
+            <select onchange="updateOrderStatus('${ord._id}', this.value)" style="padding: 6px 10px; border-radius: 8px; font-weight: 700; border: 1.5px solid var(--line); background: var(--input-bg); color: var(--ink);">
               <option value="pending" ${ord.status === 'pending' ? 'selected' : ''}>1. Order Placed</option>
-              <option value="kyc_verified" ${ord.status === 'kyc_verified' ? 'selected' : ''}>2. KYC Verified</option>
+              <option value="kyc_verified" ${ord.status === 'kyc_verified' ? 'selected' : ''}>2. KYC Verified ✓</option>
               <option value="out_for_delivery" ${ord.status === 'out_for_delivery' ? 'selected' : ''}>3. Out for Delivery</option>
               <option value="delivered" ${ord.status === 'delivered' ? 'selected' : ''}>4. Delivered & Installed</option>
               <option value="cancelled" ${ord.status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
