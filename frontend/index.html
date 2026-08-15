@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RentEase — AI Furniture Rental</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -19,6 +20,10 @@
       <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
       <button class="ghost" onclick="window.location.href='/orders.html'">📦 My Orders</button>
       <button class="ghost" onclick="window.location.href='/admin.html'" style="border-color: #38bdf8; color: #0284c7;">🛡️ Admin</button>
+      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
+        <span class="theme-icon sun-icon">☀️</span>
+        <span class="theme-icon moon-icon">🌙</span>
+      </button>
     </div>
   </nav>
 

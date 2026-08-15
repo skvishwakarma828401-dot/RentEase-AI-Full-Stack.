@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard & Management — RentEase</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
-<body style="background: #f1f5f9;">
-  <nav class="navbar" style="background: #0f172a; border-bottom: 1px solid #1e293b;">
-    <a class="logo" href="/admin.html" style="color: white;">RentEase <span style="color: #38bdf8;">Admin.</span></a>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/admin.html">RentEase <span style="color: #38bdf8;">Admin.</span></a>
     <div class="nav-actions">
-      <span id="adminStatus" style="color: #94a3b8; font-size: 13px;">Checking access...</span>
-      <button class="primary" onclick="window.location.href='/'" style="background: #334155;">← View Storefront</button>
-      <button class="ghost" onclick="adminLogout()" id="adminLogoutBtn" style="border-color: #334155; background: transparent; color: #f87171;">Logout</button>
+      <span id="adminStatus" style="color: var(--muted); font-size: 13px;">Checking access...</span>
+      <button class="primary" onclick="window.location.href='/'">← View Storefront</button>
+      <button class="ghost" onclick="adminLogout()" id="adminLogoutBtn" style="border-color: #334155; color: #f87171;">Logout</button>
+      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
+        <span class="theme-icon sun-icon">☀️</span>
+        <span class="theme-icon moon-icon">🌙</span>
+      </button>
     </div>
   </nav>
 

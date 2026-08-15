@@ -2,10 +2,28 @@
   --bg: #f7f4ee;
   --ink: #1d1d1b;
   --muted: #77746d;
-  --card: #fff;
+  --card: #ffffff;
   --line: #e5e0d7;
   --accent: #1f4b3f;
   --accent2: #d8b56b;
+  --nav-bg: rgba(247, 244, 238, 0.95);
+  --input-bg: #ffffff;
+  --modal-bg: #ffffff;
+  --card-hover-border: #cbd5e1;
+}
+
+[data-theme="dark"], body.dark-mode {
+  --bg: #090d16;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --card: #131b2e;
+  --line: #222f49;
+  --accent: #10b981;
+  --accent2: #f59e0b;
+  --nav-bg: rgba(9, 13, 22, 0.95);
+  --input-bg: #1a243a;
+  --modal-bg: #131b2e;
+  --card-hover-border: #38bdf8;
 }
 
 * { box-sizing: border-box; }
@@ -15,19 +33,22 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   color: var(--ink);
   background: var(--bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 button, input, textarea, select { font: inherit; }
 button, a { cursor: pointer; }
 .navbar {
   height: 76px; display: flex; align-items: center; justify-content: space-between;
-  padding: 0 6vw; border-bottom: 1px solid var(--line); background: rgba(247,244,238,.95);
+  padding: 0 6vw; border-bottom: 1px solid var(--line); background: var(--nav-bg);
   position: sticky; top: 0; z-index: 20; backdrop-filter: blur(10px);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 .logo { font-size: 25px; font-weight: 800; color: var(--ink); text-decoration: none; }
 .logo span { color: var(--accent2); }
 .nav-actions { display: flex; align-items: center; gap: 12px; }
 .ghost, .cart-btn, .wishlist-btn {
-  border: 1px solid var(--line); background: white; border-radius: 999px; padding: 10px 16px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 10px 16px;
+  transition: all 0.2s ease;
 }
 .cart-btn span, .wishlist-btn span { background: var(--accent); color: white; border-radius: 50%; padding: 2px 7px; margin-left: 4px; }
 .hero {
@@ -2727,6 +2748,286 @@ button, a { cursor: pointer; }
   .scanner-viewfinder-wrap { height: 260px; }
   .scanner-products-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ==========================================================================
+   Dark / Light Mode Theme Toggle Button & Component Overrides
+   ========================================================================== */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-2px) rotate(15deg);
+  border-color: var(--accent);
+}
+
+.theme-icon {
+  font-size: 20px;
+  transition: transform 0.4s ease, opacity 0.3s ease;
+  position: absolute;
+}
+
+/* In Light Mode: Sun is hidden, Moon is shown (action = switch to dark) */
+.theme-toggle-btn .sun-icon {
+  opacity: 0;
+  transform: translateY(24px) scale(0.5);
+}
+
+.theme-toggle-btn .moon-icon {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* In Dark Mode: Moon is hidden, Sun is shown (action = switch to light) */
+.theme-toggle-btn.is-dark .sun-icon {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.theme-toggle-btn.is-dark .moon-icon {
+  opacity: 0;
+  transform: translateY(-24px) scale(0.5);
+}
+
+/* ==========================================================================
+   Dark Theme Component Specific Refinements
+   ========================================================================== */
+[data-theme="dark"] .product-card,
+[data-theme="dark"] .card {
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--ink);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .category-section {
+  background: #0b111e;
+}
+
+[data-theme="dark"] .category-circle {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .category-label {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .category-item:hover .category-circle {
+  border-color: #38bdf8;
+  background: #1e293b;
+}
+
+[data-theme="dark"] .category-item.active .category-label {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .slider-bottom-ribbon {
+  background: #0f172a;
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .ribbon-inner {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .ribbon-item strong {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .festival-banner-inner {
+  background: #131b2e;
+  background-image: radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.15) 0px, transparent 50%),
+                    radial-gradient(at 0% 100%, rgba(239, 68, 68, 0.1) 0px, transparent 50%);
+  border-color: #334155;
+}
+
+[data-theme="dark"] .festival-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .festival-coupon-box {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .coupon-chip {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .coupon-code {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .festival-switcher-bar select,
+[data-theme="dark"] .filters select,
+[data-theme="dark"] .filters input,
+[data-theme="dark"] .ai-box textarea,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea {
+  background: var(--input-bg);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .ai-box textarea::placeholder,
+[data-theme="dark"] input::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .ai-section {
+  background: #0b111e;
+}
+
+[data-theme="dark"] .modal-card {
+  background: var(--modal-bg);
+  border-color: var(--line);
+  color: var(--ink);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+}
+
+[data-theme="dark"] .analysis-summary-card {
+  background: #1a243a;
+  border-color: #2e3d5b;
+}
+
+[data-theme="dark"] .analysis-header-row h3 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .res-chip {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .scanner-product-card {
+  background: #131b2e;
+  border-color: #222f49;
+}
+
+[data-theme="dark"] .scanner-card-body h5 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .order-card,
+[data-theme="dark"] .admin-card,
+[data-theme="dark"] .stat-card {
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .pay-logo-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .site-footer {
+  background: #050810;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .footer-col h4 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .footer-links a,
+[data-theme="dark"] .footer-toll-box,
+[data-theme="dark"] .footer-email-box a,
+[data-theme="dark"] .footer-address-box span {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .footer-bottom {
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .f-badge {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+/* Chatbot Dark Theme */
+[data-theme="dark"] .chatbot-window {
+  background: #131b2e;
+  border-color: #2e3d5b;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+}
+
+[data-theme="dark"] .chatbot-messages {
+  background: #090d16;
+}
+
+[data-theme="dark"] .msg.bot .msg-bubble {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .msg.user .msg-bubble {
+  background: #10b981;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .msg-product-card {
+  background: #131b2e;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .msg-product-details h4 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .msg-product-meta {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .chatbot-quick-chips {
+  background: #131b2e;
+  border-color: #222f49;
+}
+
+[data-theme="dark"] .quick-chip {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .quick-chip:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .chatbot-input-bar {
+  background: #131b2e;
+  border-color: #222f49;
+}
+
+[data-theme="dark"] .chatbot-input-bar textarea {
+  background: #1a243a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+
 
 
 

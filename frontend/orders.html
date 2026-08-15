@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Orders & Tracking — RentEase</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -15,6 +16,10 @@
       <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
       <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
       <button class="primary" onclick="window.location.href='/'">← Back to Shopping</button>
+      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
+        <span class="theme-icon sun-icon">☀️</span>
+        <span class="theme-icon moon-icon">🌙</span>
+      </button>
     </div>
   </nav>
 
