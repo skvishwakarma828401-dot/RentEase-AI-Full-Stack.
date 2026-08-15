@@ -1,0 +1,24 @@
+{
+  "name": "rentease-ai-full-stack",
+  "version": "1.0.0",
+  "description": "RentEase — Smart AI Furniture Rental & Buying Full-Stack Platform",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "seed": "node backend/seed.js",
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "openai": "^5.16.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

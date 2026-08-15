@@ -1,4 +1,5 @@
 const OpenAI = require("openai");
+const fallbackProducts = require("../data/productsData");
 
 // RentEase comprehensive knowledge base
 const KNOWLEDGE_BASE = {
@@ -200,7 +201,21 @@ async function processChatMessage({ message, history = [], ProductModel }) {
         products = await ProductModel.find({ category: matchedFilters.category, available: true }).limit(3);
       }
     } catch (dbErr) {
-      console.error("DB Query error:", dbErr.message);
+      console.warn("DB Query error, using in-memory catalog:", dbErr.message);
+    }
+
+    if (!products || products.length === 0) {
+      // In-memory fallback
+      products = fallbackProducts.filter(p => {
+        if (matchedFilters.category && p.category !== matchedFilters.category) return false;
+        if (matchedFilters.maxPrice && p.price > matchedFilters.maxPrice) return false;
+        if (matchedFilters.roomSize && p.roomSize !== matchedFilters.roomSize) return false;
+        return true;
+      }).slice(0, 4);
+
+      if (products.length === 0 && matchedFilters.category) {
+        products = fallbackProducts.filter(p => p.category === matchedFilters.category).slice(0, 3);
+      }
     }
 
     if (products.length > 0) {
@@ -372,7 +387,11 @@ async function analyzeRoomScan({ imageData, roomTypeHint, spaceSizeHint, Product
       .limit(6);
     }
   } catch (err) {
-    console.error("Room scan product fetch error:", err.message);
+    console.warn("Room scan product fetch error, using in-memory catalog:", err.message);
+  }
+
+  if (!recommendedProducts || recommendedProducts.length === 0) {
+    recommendedProducts = fallbackProducts.filter(p => archetype.categories.includes(p.category)).slice(0, 6);
   }
 
   return {
