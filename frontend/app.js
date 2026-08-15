@@ -274,7 +274,30 @@ async function submitAuth() {
 
 function updateUserStatus() {
   const user = JSON.parse(localStorage.getItem("renteaseUser") || "null");
-  document.getElementById("userStatus").textContent = user ? `Hi, ${user.name}` : "Guest";
+  const userStatusEl = document.getElementById("userStatus");
+  const authNavBtn = document.getElementById("authNavBtn");
+
+  if (user) {
+    if (userStatusEl) userStatusEl.textContent = `Hi, ${user.name}`;
+    if (authNavBtn) {
+      authNavBtn.textContent = "Logout";
+      authNavBtn.onclick = logoutUser;
+    }
+  } else {
+    if (userStatusEl) userStatusEl.textContent = "Guest";
+    if (authNavBtn) {
+      authNavBtn.textContent = "Login / Register";
+      authNavBtn.onclick = openAuth;
+    }
+  }
+}
+
+function logoutUser() {
+  localStorage.removeItem("renteaseToken");
+  localStorage.removeItem("renteaseUser");
+  token = null;
+  updateUserStatus();
+  showToast("Logged out successfully.");
 }
 
 /* ==========================================================================
