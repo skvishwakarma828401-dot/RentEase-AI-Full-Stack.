@@ -4,22 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Cart & Checkout — RentEase</title>
-  <link rel="stylesheet" href="style.css?v=3.5" />
-  <script src="theme.js?v=3.5"></script>
+  <link rel="stylesheet" href="style.css?v=4.0" />
+  <script>
+    (function() {
+      const saved = localStorage.getItem("renteaseTheme");
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <script src="theme.js?v=4.0"></script>
 </head>
 <body>
   <nav class="navbar">
     <a class="logo" href="/">RentEase<span>.</span></a>
     <div class="nav-actions">
+      <button id="navThemeToggleBtn" class="theme-nav-btn" onclick="toggleTheme()" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <span class="theme-nav-icon">🌓</span>
+        <span class="theme-nav-text" id="navThemeText">Dark Mode</span>
+      </button>
       <span id="userStatus">Guest</span>
       <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
       <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
       <button class="ghost" onclick="window.location.href='/orders.html'" id="ordersNavBtn">📦 My Orders</button>
       <button class="primary" onclick="window.location.href='/'">← Back to Shopping</button>
-      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
-        <span class="theme-icon sun-icon">☀️</span>
-        <span class="theme-icon moon-icon">🌙</span>
-      </button>
     </div>
   </nav>
 
@@ -577,6 +585,12 @@
       renderCart();
     };
   </script>
+  <!-- Floating Quick Theme Switcher (Bottom-Left) -->
+  <button id="themeFloatingFab" class="theme-floating-fab" onclick="toggleTheme()" aria-label="Toggle Dark and Light Mode" title="Toggle Theme">
+    <span class="fab-theme-icon">🌓</span>
+    <span class="fab-theme-text" id="fabThemeText">Dark Mode</span>
+  </button>
+
   <script src="chatbot.js"></script>
 </body>
 </html>

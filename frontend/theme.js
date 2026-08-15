@@ -1,39 +1,20 @@
 /**
  * RentEase Theme Switcher (Dark Mode & Light Mode)
- * Persists user choice in localStorage with instant pre-render initialization
+ * Ensures 100% reliable theme toggling across Mobile, iPad, and Laptop devices.
  */
 
 (function () {
-  // 1. Instant check on initial load (prevents page flash)
+  // Pre-render theme check
   const savedTheme = localStorage.getItem("renteaseTheme");
-  const systemPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const initialTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
 
   applyTheme(initialTheme, false);
 
-  // 2. Inject floating Theme Switcher FAB & sync navbar buttons on DOM ready
   document.addEventListener("DOMContentLoaded", () => {
-    initThemeUI();
-    updateThemeButtons(initialTheme);
+    updateThemeUIElements(initialTheme);
   });
 })();
-
-function initThemeUI() {
-  if (document.getElementById("rentease-theme-fab")) return;
-
-  // Floating Quick Theme Switcher in Bottom Left (Ensures 100% visibility on all screens & devices)
-  const fab = document.createElement("button");
-  fab.id = "rentease-theme-fab";
-  fab.className = "theme-floating-fab";
-  fab.setAttribute("aria-label", "Toggle Dark and Light Mode");
-  fab.setAttribute("title", "Toggle Dark / Light Mode");
-  fab.onclick = toggleTheme;
-  fab.innerHTML = `
-    <span class="fab-theme-icon">🌓</span>
-    <span class="fab-theme-text" id="fabThemeText">Dark Mode</span>
-  `;
-  document.body.appendChild(fab);
-}
 
 function applyTheme(theme, save = true) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -43,39 +24,33 @@ function applyTheme(theme, save = true) {
   if (save) {
     localStorage.setItem("renteaseTheme", theme);
   }
-  updateThemeButtons(theme);
+  updateThemeUIElements(theme);
 }
 
-function updateThemeButtons(theme) {
+function updateThemeUIElements(theme) {
   const isDark = theme === "dark";
 
-  // Navbar Buttons
-  const buttons = document.querySelectorAll(".theme-toggle-btn");
-  buttons.forEach(btn => {
-    if (isDark) {
-      btn.setAttribute("title", "Switch to Light Mode");
-      btn.setAttribute("aria-label", "Switch to Light Mode");
-      btn.classList.add("is-dark");
-      const label = btn.querySelector(".theme-btn-label");
-      if (label) label.textContent = "Light Mode";
-    } else {
-      btn.setAttribute("title", "Switch to Dark Mode");
-      btn.setAttribute("aria-label", "Switch to Dark Mode");
-      btn.classList.remove("is-dark");
-      const label = btn.querySelector(".theme-btn-label");
-      if (label) label.textContent = "Dark Mode";
-    }
-  });
-
-  // Floating FAB
+  // 1. Update Floating FAB (Bottom-Left)
+  const fab = document.getElementById("themeFloatingFab") || document.getElementById("rentease-theme-fab");
   const fabText = document.getElementById("fabThemeText");
-  const fab = document.getElementById("rentease-theme-fab");
   if (fabText) {
     fabText.textContent = isDark ? "Light Mode" : "Dark Mode";
   }
   if (fab) {
     fab.classList.toggle("is-dark", isDark);
+    fab.setAttribute("title", isDark ? "Switch to Light Mode" : "Switch to Dark Mode");
   }
+
+  // 2. Update Navbar Theme Pill Button
+  const navBtns = document.querySelectorAll(".theme-nav-btn, .theme-toggle-btn");
+  navBtns.forEach(btn => {
+    btn.classList.toggle("is-dark", isDark);
+    btn.setAttribute("title", isDark ? "Switch to Light Mode" : "Switch to Dark Mode");
+    const textSpan = btn.querySelector(".theme-nav-text, .theme-btn-label");
+    if (textSpan) {
+      textSpan.textContent = isDark ? "Light Mode" : "Dark Mode";
+    }
+  });
 }
 
 function toggleTheme() {
@@ -84,10 +59,9 @@ function toggleTheme() {
   applyTheme(newTheme, true);
 
   if (typeof showToast === "function") {
-    showToast(newTheme === "dark" ? "🌙 Dark Mode Enabled" : "☀️ Light Mode Enabled");
+    showToast(newTheme === "dark" ? "🌙 Dark Mode Active" : "☀️ Light Mode Active");
   }
 }
 
-// Attach to window object for global availability across all HTML files
 window.toggleTheme = toggleTheme;
 window.applyTheme = applyTheme;

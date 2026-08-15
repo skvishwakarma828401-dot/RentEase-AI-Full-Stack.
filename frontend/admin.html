@@ -4,20 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard & Management — RentEase</title>
-  <link rel="stylesheet" href="style.css?v=3.5" />
-  <script src="theme.js?v=3.5"></script>
+  <link rel="stylesheet" href="style.css?v=4.0" />
+  <script>
+    (function() {
+      const saved = localStorage.getItem("renteaseTheme");
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <script src="theme.js?v=4.0"></script>
 </head>
 <body>
   <nav class="navbar">
     <a class="logo" href="/admin.html">RentEase <span style="color: #38bdf8;">Admin.</span></a>
     <div class="nav-actions">
+      <button id="navThemeToggleBtn" class="theme-nav-btn" onclick="toggleTheme()" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <span class="theme-nav-icon">🌓</span>
+        <span class="theme-nav-text" id="navThemeText">Dark Mode</span>
+      </button>
       <span id="adminStatus" style="color: var(--muted); font-size: 13px;">Checking access...</span>
       <button class="primary" onclick="window.location.href='/'">← View Storefront</button>
       <button class="ghost" onclick="adminLogout()" id="adminLogoutBtn" style="border-color: #334155; color: #f87171;">Logout</button>
-      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
-        <span class="theme-icon sun-icon">☀️</span>
-        <span class="theme-icon moon-icon">🌙</span>
-      </button>
     </div>
   </nav>
 
@@ -414,6 +422,12 @@
     // Initialize
     checkAdminAuth();
   </script>
+  <!-- Floating Quick Theme Switcher (Bottom-Left) -->
+  <button id="themeFloatingFab" class="theme-floating-fab" onclick="toggleTheme()" aria-label="Toggle Dark and Light Mode" title="Toggle Theme">
+    <span class="fab-theme-icon">🌓</span>
+    <span class="fab-theme-text" id="fabThemeText">Dark Mode</span>
+  </button>
+
   <script src="chatbot.js"></script>
 </body>
 </html>

@@ -38,19 +38,30 @@ body {
 button, input, textarea, select { font: inherit; }
 button, a { cursor: pointer; }
 .navbar {
-  height: 76px; display: flex; align-items: center; justify-content: space-between;
-  padding: 0 6vw; border-bottom: 1px solid var(--line); background: var(--nav-bg);
-  position: sticky; top: 0; z-index: 20; backdrop-filter: blur(10px);
+  min-height: 72px; display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 4vw; border-bottom: 1px solid var(--line); background: var(--nav-bg);
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
   transition: background 0.3s ease, border-color 0.3s ease;
+  gap: 12px;
 }
-.logo { font-size: 25px; font-weight: 800; color: var(--ink); text-decoration: none; }
+.logo { font-size: 24px; font-weight: 900; color: var(--ink); text-decoration: none; white-space: nowrap; }
 .logo span { color: var(--accent2); }
-.nav-actions { display: flex; align-items: center; gap: 12px; }
-.ghost, .cart-btn, .wishlist-btn {
-  border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 10px 16px;
+.nav-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.ghost, .cart-btn, .wishlist-btn, .theme-nav-btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 8px 14px;
+  font-size: 13px; font-weight: 600; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center;
   transition: all 0.2s ease;
 }
-.cart-btn span, .wishlist-btn span { background: var(--accent); color: white; border-radius: 50%; padding: 2px 7px; margin-left: 4px; }
+.theme-nav-btn {
+  border: 1.5px solid #38bdf8;
+  font-weight: 700;
+  cursor: pointer;
+}
+.theme-nav-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.cart-btn span, .wishlist-btn span { background: var(--accent); color: white; border-radius: 50%; padding: 2px 7px; margin-left: 4px; font-size: 11px; }
 .hero {
   min-height: 540px; padding: 90px 8vw; display: grid; grid-template-columns: 1.2fr .8fr;
   gap: 60px; align-items: center; background: #e8e1d3;
@@ -2806,30 +2817,31 @@ button, a { cursor: pointer; }
 /* Floating Theme Switcher FAB (Bottom Left - Unmissable on all devices) */
 .theme-floating-fab {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 9999;
-  display: inline-flex;
+  bottom: 22px;
+  left: 22px;
+  z-index: 999999;
+  display: flex !important;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1e293b;
-  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border: 2px solid #0284c7;
   padding: 10px 18px;
   border-radius: 999px;
   font-family: inherit;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
 .theme-floating-fab:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-  border-color: #0284c7;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 14px 34px rgba(2, 132, 199, 0.35);
+  border-color: #0369a1;
 }
 
 .theme-floating-fab .fab-theme-icon {
@@ -2843,10 +2855,95 @@ button, a { cursor: pointer; }
 
 [data-theme="dark"] .theme-floating-fab,
 .theme-floating-fab.is-dark {
-  background: rgba(19, 27, 46, 0.95);
-  color: #f1f5f9;
-  border-color: #38bdf8;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #131b2e !important;
+  color: #f1f5f9 !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Responsive Media Queries for All Devices (Mobile, iPad, Laptop) */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 8px 3vw;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .hero-slider-section {
+    min-height: 420px;
+  }
+  .slide-item {
+    height: 420px;
+  }
+  .slide-content h2 {
+    font-size: 32px !important;
+  }
+  .festival-banner-inner {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 4vw;
+  }
+  .nav-actions {
+    justify-content: center;
+    gap: 6px;
+  }
+  .logo {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .slide-item {
+    height: 380px;
+  }
+  .slide-badge-circle {
+    display: none !important;
+  }
+  .slide-content h2 {
+    font-size: 26px !important;
+  }
+  .slide-content p {
+    font-size: 14px !important;
+  }
+  .theme-floating-fab {
+    bottom: 18px;
+    left: 16px;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .nav-actions {
+    gap: 4px;
+  }
+  .ghost, .cart-btn, .wishlist-btn, .theme-nav-btn {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+  .festival-coupon-box {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .festival-countdown-clock {
+    gap: 4px;
+  }
+  .time-digit-card {
+    min-width: 44px;
+    padding: 6px 4px;
+  }
 }
 
 /* ==========================================================================

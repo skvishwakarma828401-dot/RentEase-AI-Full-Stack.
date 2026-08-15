@@ -4,8 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RentEase — AI Furniture Rental</title>
-  <link rel="stylesheet" href="style.css?v=3.5" />
-  <script src="theme.js?v=3.5"></script>
+  <link rel="stylesheet" href="style.css?v=4.0" />
+  <script>
+    (function() {
+      const saved = localStorage.getItem("renteaseTheme");
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <script src="theme.js?v=4.0"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -14,16 +22,16 @@
       <button class="scanner-nav-trigger" onclick="openRoomScanner()" title="Scan your room or any space with Live AI Camera">
         <span class="cam-dot"></span> 📷 AI Room Scanner
       </button>
+      <button id="navThemeToggleBtn" class="theme-nav-btn" onclick="toggleTheme()" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <span class="theme-nav-icon">🌓</span>
+        <span class="theme-nav-text" id="navThemeText">Dark Mode</span>
+      </button>
       <span id="userStatus">Guest</span>
       <button class="ghost" onclick="openAuth()" id="authNavBtn">Login / Register</button>
       <button class="cart-btn" onclick="window.location.href='/cart.html'">Cart <span id="cartCount">0</span></button>
       <button class="wishlist-btn" onclick="window.location.href='/wishlist.html'">❤ Wishlist <span id="wishlistCount">0</span></button>
       <button class="ghost" onclick="window.location.href='/orders.html'">📦 My Orders</button>
       <button class="ghost" onclick="window.location.href='/admin.html'" style="border-color: #38bdf8; color: #0284c7;">🛡️ Admin</button>
-      <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Dark / Light Mode" title="Toggle Theme">
-        <span class="theme-icon sun-icon">☀️</span>
-        <span class="theme-icon moon-icon">🌙</span>
-      </button>
     </div>
   </nav>
 
@@ -727,6 +735,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Quick Theme Switcher (Bottom-Left) -->
+  <button id="themeFloatingFab" class="theme-floating-fab" onclick="toggleTheme()" aria-label="Toggle Dark and Light Mode" title="Toggle Theme">
+    <span class="fab-theme-icon">🌓</span>
+    <span class="fab-theme-text" id="fabThemeText">Dark Mode</span>
+  </button>
 
   <script src="app.js"></script>
   <script src="chatbot.js"></script>
