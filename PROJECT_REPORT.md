@@ -2,7 +2,7 @@
 **Project Title**: RentEase AI — Smart AI Furniture Rental & Buying Full-Stack Platform  
 **Live Repository Link**: [https://github.com/skvishwakarma828401-dot/RentEase-AI-Full-Stack.](https://github.com/skvishwakarma828401-dot/RentEase-AI-Full-Stack.)  
 **Official Project Report Link**: [https://github.com/skvishwakarma828401-dot/RentEase-AI-Full-Stack./blob/main/PROJECT_REPORT.md](https://github.com/skvishwakarma828401-dot/RentEase-AI-Full-Stack./blob/main/PROJECT_REPORT.md)  
-**Author**: Shailesh Vishwakarma  
+**Author**: Sumit Kumar  
 **Version**: 1.0.0 (Production / Interview / Enterprise Ready)  
 
 ---
