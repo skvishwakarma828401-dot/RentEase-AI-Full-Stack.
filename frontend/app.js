@@ -215,15 +215,26 @@ async function askAI() {
     </div>
     <div class="ai-products">
       ${aiProducts.map(p => `
-        <div class="ai-mini product" data-id="${p._id}">
-          <img src="${p.image}" alt="${p.name}">
-          <strong>${p.name}</strong>
-          <p>${money(p.price)} · ★ ${p.rating}</p>
-          <button class="primary" onclick="addToCartById('${p._id}')">Add</button>
+        <div class="ai-mini product ai-recommendation-card" data-id="${p._id || ''}" onclick="openRecommendedProduct('${p._id || ''}')" title="Click to inspect ${p.name || 'this item'}">
+          <img src="${p.image || ''}" alt="${p.name || 'Recommended furniture'}" style="cursor:pointer;" onclick="openRecommendedProduct('${p._id || ''}')">
+          <strong style="cursor:pointer; display:block; margin:6px 0;" onclick="openRecommendedProduct('${p._id || ''}')">${p.name || 'Recommended furniture'}</strong>
+          <p>${money(p.price)} · ★ ${p.rating || 4.8}</p>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="ghost" style="flex:1; padding:7px 8px; font-size:12px;" onclick="event.stopPropagation(); openRecommendedProduct('${p._id || ''}')" title="View product specifications">View ↗</button>
+            <button class="primary" style="flex:1; padding:7px 8px; font-size:12px;" onclick="event.stopPropagation(); addToCartById('${p._id || ''}')">+ Add</button>
+          </div>
         </div>
       `).join("")}
     </div>
   `;
+}
+
+async function openRecommendedProduct(productOrId) {
+  if (!productOrId || productOrId === "undefined" || productOrId === "null") {
+    showToast("Product details are unavailable for this recommendation.");
+    return;
+  }
+  return openProductQuickView(productOrId);
 }
 
 function openAuth() {
@@ -810,14 +821,14 @@ function renderScannerResults(data) {
   if (productsGrid) {
     if (data.products && data.products.length > 0) {
       productsGrid.innerHTML = data.products.map(p => `
-        <div class="scanner-product-card">
+        <div class="scanner-product-card" onclick="openProductQuickView('${p._id}')" style="cursor:pointer;" title="Click to view details for ${p.name}">
           <img src="${p.image}" alt="${p.name}" loading="lazy" />
           <div class="scanner-card-body">
-            <h5>${p.name}</h5>
-            <div class="card-meta">⭐ ${p.rating} • ${p.material || 'Premium'}</div>
+            <h5 onclick="openProductQuickView('${p._id}')">${p.name}</h5>
+            <div class="card-meta">⭐ ${p.rating || 4.8} • ${p.material || 'Premium'}</div>
             <div class="scanner-card-footer">
-              <div class="price">₹${p.price.toLocaleString("en-IN")}<small style="font-size:10px; color:#64748b; font-weight:normal;"> /mo</small></div>
-              <button class="scanner-add-btn" onclick="addToCart('${p._id}'); showToast('Added ${p.name} to Cart 🛒')">+ Add to Cart</button>
+              <div class="price">₹${(p.price || 999).toLocaleString("en-IN")}<small style="font-size:10px; color:#64748b; font-weight:normal;"> /mo</small></div>
+              <button class="scanner-add-btn" onclick="event.stopPropagation(); addToCart('${p._id}'); showToast('Added ${p.name} to Cart 🛒')">+ Add to Cart</button>
             </div>
           </div>
         </div>
@@ -836,12 +847,42 @@ function renderScannerResults(data) {
 let currentQvProduct = null;
 let currentQvTenure = 12;
 
-function openProductQuickView(productId) {
-  const product = currentProducts.find(p => String(p._id) === String(productId)) ||
-                  aiProducts.find(p => String(p._id) === String(productId)) ||
-                  wishlist.find(p => String(p._id) === String(productId));
+async function openProductQuickView(productOrId) {
+  let product = null;
 
-  if (!product) return;
+  if (typeof productOrId === "object" && productOrId !== null) {
+    product = productOrId;
+  } else if (typeof productOrId === "string" && productOrId.trim()) {
+    const id = productOrId.trim();
+    product = currentProducts.find(p => String(p._id) === id || String(p.id) === id) ||
+              aiProducts.find(p => String(p._id) === id || String(p.id) === id) ||
+              wishlist.find(p => String(p._id) === id || String(p.id) === id);
+
+    if (!product) {
+      try {
+        const res = await fetch(`${API}/products/${encodeURIComponent(id)}`);
+        if (res.ok) {
+          product = await res.json();
+        }
+      } catch (err) {
+        console.warn("Failed to fetch product details for quick view:", err);
+      }
+    }
+  }
+
+  if (!product || (!product._id && !product.id)) {
+    showToast("Product details could not be loaded.");
+    return;
+  }
+
+  // Normalize product ID if needed
+  if (!product._id && product.id) product._id = product.id;
+
+  // Cache in aiProducts if not already tracked
+  if (!aiProducts.some(p => String(p._id) === String(product._id))) {
+    aiProducts.push(product);
+  }
+
   currentQvProduct = product;
   currentQvTenure = 12;
 
@@ -852,13 +893,20 @@ function openProductQuickView(productId) {
   if (!modal) return;
 
   // Populate data
-  document.getElementById("qvImage").src = product.image;
-  document.getElementById("qvCategory").textContent = product.category || "FURNITURE";
-  document.getElementById("qvTitle").textContent = product.name;
-  document.getElementById("qvRating").textContent = product.rating || "4.8";
-  document.getElementById("qvMaterial").textContent = product.material || "Premium Engineered Hardwood";
-  document.getElementById("qvColor").textContent = product.color || "Natural Finish";
-  document.getElementById("qvRoomSize").textContent = (product.roomSize ? product.roomSize.toUpperCase() : "MEDIUM") + " ROOM";
+  const imgEl = document.getElementById("qvImage");
+  if (imgEl) imgEl.src = product.image || "";
+  const catEl = document.getElementById("qvCategory");
+  if (catEl) catEl.textContent = (product.category || "FURNITURE").toUpperCase();
+  const titleEl = document.getElementById("qvTitle");
+  if (titleEl) titleEl.textContent = product.name || "Furniture Item";
+  const ratingEl = document.getElementById("qvRating");
+  if (ratingEl) ratingEl.textContent = product.rating || "4.8";
+  const matEl = document.getElementById("qvMaterial");
+  if (matEl) matEl.textContent = product.material || "Premium Engineered Hardwood";
+  const colorEl = document.getElementById("qvColor");
+  if (colorEl) colorEl.textContent = product.color || "Natural Finish";
+  const roomEl = document.getElementById("qvRoomSize");
+  if (roomEl) roomEl.textContent = (product.roomSize ? product.roomSize.toUpperCase() : "MEDIUM") + " ROOM";
 
   // Mock Realistic Dimensions by Category
   const dimMap = {
@@ -870,7 +918,8 @@ function openProductQuickView(productId) {
     wardrobe: `40" W × 22" D × 75" H`,
     kids: `42" W × 28" D × 36" H (Child-Safe)`
   };
-  document.getElementById("qvDimensions").textContent = dimMap[product.category] || `45" W × 28" D × 32" H`;
+  const dimEl = document.getElementById("qvDimensions");
+  if (dimEl) dimEl.textContent = dimMap[product.category] || `45" W × 28" D × 32" H`;
 
   updateQvPrice();
   loadProductReviews(product._id);
@@ -1075,6 +1124,39 @@ updateUserStatus();
 initHeroSlider();
 renderFestivalBanner("auto");
 renderRecentlyViewed();
+
+// Close Quick View on backdrop click
+const qvModalEl = document.getElementById("productQuickViewModal");
+if (qvModalEl) {
+  qvModalEl.addEventListener("click", (e) => {
+    if (e.target === qvModalEl) closeProductQuickView();
+  });
+}
+
+// Global Escape key listener to close modals
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeProductQuickView();
+    if (typeof closeAuth === "function") closeAuth();
+  }
+});
+
+// Automatically check and open product if URL query param ?product=... is present
+function checkUrlForProductParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const prodId = params.get("product");
+    if (prodId) {
+      setTimeout(() => {
+        openProductQuickView(prodId);
+      }, 300);
+    }
+  } catch (e) {
+    console.warn("Could not check URL for product query:", e);
+  }
+}
+
+checkUrlForProductParam();
 
 
 

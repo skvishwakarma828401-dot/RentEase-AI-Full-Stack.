@@ -1,5 +1,7 @@
 const router = require("express").Router();
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
+const fallbackProducts = require("../data/productsData");
 const { parseWithAI, processChatMessage, analyzeRoomScan } = require("../services/aiService");
 
 // Conversational Chatbot endpoint for interactive floating widget
@@ -37,7 +39,7 @@ router.post("/chat", async (req, res) => {
   }
 });
 
-// Backward-compatible single recommendation endpoint
+// Backward-compatible single recommendation endpoint (for on-page AI section)
 router.post("/recommend", async (req, res) => {
   try {
     const { message } = req.body;
@@ -49,18 +51,83 @@ router.post("/recommend", async (req, res) => {
     const filters = await parseWithAI(message);
 
     const query = { available: true };
-
     if (filters.category) query.category = filters.category.toLowerCase();
     if (filters.maxPrice) query.price = { $lte: Number(filters.maxPrice) };
     if (filters.roomSize) query.roomSize = filters.roomSize;
 
-    const products = await Product.find(query).sort({ rating: -1, price: 1 }).limit(6);
+    let products = [];
+    const isDbConnected = req.app.locals.isDbConnected && mongoose.connection.readyState === 1;
 
-    const explanation = products.length
-      ? `I found ${products.length} option${products.length > 1 ? "s" : ""} matching your request.`
-      : "I couldn't find an exact match. Try increasing your budget or changing the room size/category.";
+    if (isDbConnected) {
+      try {
+        products = await Product.find(query).sort({ rating: -1, price: 1 }).limit(6);
 
-    res.json({ message: explanation, filters, products });
+        if (products.length === 0 && filters.category && filters.maxPrice) {
+          products = await Product.find({
+            category: filters.category.toLowerCase(),
+            price: { $lte: Number(filters.maxPrice) },
+            available: true
+          }).sort({ rating: -1, price: 1 }).limit(6);
+        }
+
+        if (products.length === 0 && filters.category) {
+          products = await Product.find({
+            category: filters.category.toLowerCase(),
+            available: true
+          }).sort({ price: 1 }).limit(6);
+        }
+      } catch (dbErr) {
+        console.warn("DB Query error in /recommend:", dbErr.message);
+      }
+    }
+
+    if (!products || products.length === 0) {
+      products = fallbackProducts.filter(p => {
+        if (filters.category && p.category && p.category.toLowerCase() !== filters.category.toLowerCase()) return false;
+        if (filters.maxPrice && Number(p.price) > Number(filters.maxPrice)) return false;
+        if (filters.roomSize && p.roomSize && p.roomSize.toLowerCase() !== filters.roomSize.toLowerCase()) return false;
+        return true;
+      }).slice(0, 6);
+
+      if (products.length === 0 && filters.category && filters.maxPrice) {
+        products = fallbackProducts.filter(p =>
+          p.category && p.category.toLowerCase() === filters.category.toLowerCase() && Number(p.price) <= Number(filters.maxPrice)
+        ).slice(0, 6);
+      }
+
+      if (products.length === 0 && filters.category) {
+        products = fallbackProducts.filter(p =>
+          p.category && p.category.toLowerCase() === filters.category.toLowerCase()
+        ).slice(0, 6);
+      }
+    }
+
+    // Normalize all products with string IDs and link
+    const normalizedProducts = products.map((p, idx) => {
+      const prodObj = p.toObject ? p.toObject() : { ...p };
+      const validId = String(prodObj._id || prodObj.id || `66b8c9d0e1f2a3b4c5d6${String(idx + 1).padStart(4, "0")}`);
+      return {
+        ...prodObj,
+        _id: validId,
+        id: validId,
+        name: prodObj.name || "Furniture Item",
+        category: prodObj.category || "furniture",
+        price: Number(prodObj.price) || 999,
+        rating: Number(prodObj.rating) || 4.8,
+        image: prodObj.image || "",
+        material: prodObj.material || "Premium",
+        color: prodObj.color || "Natural Finish",
+        roomSize: prodObj.roomSize || "medium",
+        description: prodObj.description || "",
+        url: `/?product=${encodeURIComponent(validId)}`
+      };
+    });
+
+    const explanation = normalizedProducts.length
+      ? `I found ${normalizedProducts.length} option${normalizedProducts.length > 1 ? "s" : ""} matching your request. Click any item to view full specifications, dimensions, and rental tenures.`
+      : "I couldn't find an exact match. Try expanding your budget or asking for sofa, bed, chair, desk, table, or wardrobe!";
+
+    res.json({ message: explanation, filters, products: normalizedProducts });
   } catch (error) {
     console.error("AI recommendation error:", error.message);
     res.status(500).json({

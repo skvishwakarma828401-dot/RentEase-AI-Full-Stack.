@@ -210,24 +210,32 @@
     if (msg.products && msg.products.length > 0) {
       productsHtml = `
         <div class="chat-products-grid">
-          ${msg.products.map(p => `
-            <div class="chat-product-card" data-product-id="${p._id}">
-              <div class="card-img-wrap">
-                <img src="${p.image}" alt="${p.name}" loading="lazy">
+          ${msg.products.map(p => {
+            const prodId = p._id || p.id || "";
+            return `
+            <div class="chat-product-card" data-product-id="${prodId}" onclick="window.RentEaseChatbot.openProduct('${prodId}')" title="Click to view complete details for ${p.name || 'this furniture'}">
+              <div class="card-img-wrap" onclick="window.RentEaseChatbot.openProduct('${prodId}')">
+                <img src="${p.image || ''}" alt="${p.name || 'Recommended furniture'}" loading="lazy">
                 <span class="card-tag">${p.category || 'furniture'}</span>
+                <div class="card-quick-view-overlay">🔍 Quick View</div>
               </div>
               <div class="card-details">
-                <h6>${p.name}</h6>
+                <h6 onclick="window.RentEaseChatbot.openProduct('${prodId}')" title="${p.name || 'Recommended furniture'}">${p.name || 'Recommended furniture'}</h6>
                 <div class="card-price-row">
                   <span class="card-price">${formatMoney(p.price)}<small>/mo</small></span>
-                  <span class="card-rating">★ ${p.rating || 4.5}</span>
+                  <span class="card-rating">★ ${p.rating || 4.8}</span>
                 </div>
-                <button class="chat-add-btn" onclick="window.RentEaseChatbot.handleAddToCart(event, '${encodeURIComponent(JSON.stringify(p))}')">
-                  + Add to Cart
-                </button>
+                <div class="chat-card-actions">
+                  <button type="button" class="chat-view-btn" onclick="event.stopPropagation(); window.RentEaseChatbot.openProduct('${prodId}')" title="Inspect full specifications & tenures">
+                    Details ↗
+                  </button>
+                  <button type="button" class="chat-add-btn" onclick="window.RentEaseChatbot.handleAddToCart(event, '${encodeURIComponent(JSON.stringify(p))}')" title="Add item to your cart">
+                    + Add
+                  </button>
+                </div>
               </div>
             </div>
-          `).join("")}
+          `;}).join("")}
         </div>
       `;
     }
@@ -424,6 +432,185 @@
     }
   }
 
+  let activeModalProduct = null;
+  let activeModalTenure = 12;
+
+  function closeModal() {
+    const modal = document.getElementById("productQuickViewModal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  function selectModalTenure(months, btn) {
+    activeModalTenure = months;
+    document.querySelectorAll("#productQuickViewModal .qv-pill").forEach((p) => p.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    updateModalPrice();
+  }
+
+  function updateModalPrice() {
+    if (!activeModalProduct) return;
+    const base = activeModalProduct.price;
+    let discount = 0;
+    if (activeModalTenure >= 24) discount = 35;
+    else if (activeModalTenure >= 12) discount = 25;
+    else if (activeModalTenure >= 6) discount = 15;
+    else if (activeModalTenure >= 3) discount = 5;
+
+    const finalMonthly = Math.round(base * (1 - discount / 100));
+    const priceEl = document.querySelector("#productQuickViewModal #qvPrice");
+    if (priceEl) priceEl.textContent = formatMoney(finalMonthly);
+  }
+
+  function addActiveModalToCart() {
+    if (!activeModalProduct) return;
+    const encoded = encodeURIComponent(JSON.stringify(activeModalProduct));
+    handleAddToCart(null, encoded);
+    closeModal();
+  }
+
+  function renderStandaloneModal(product) {
+    activeModalProduct = product;
+    activeModalTenure = 12;
+
+    let modal = document.getElementById("productQuickViewModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "productQuickViewModal";
+      modal.className = "modal hidden";
+      modal.innerHTML = `
+        <div class="quickview-modal-card">
+          <button class="close" onclick="window.RentEaseChatbot.closeModal()">×</button>
+          <div class="quickview-grid">
+            <div class="quickview-media">
+              <img id="qvImage" src="${product.image || ''}" alt="${product.name || 'Furniture'}" />
+              <div class="qv-badges-row">
+                <span class="qv-badge">✓ 7-Day Free Trial</span>
+                <span class="qv-badge">✓ Free Doorstep Setup</span>
+                <span class="qv-badge">✓ 100% Refundable Deposit</span>
+              </div>
+            </div>
+            <div class="quickview-details">
+              <div class="qv-header">
+                <span class="qv-cat" id="qvCategory">${(product.category || 'FURNITURE').toUpperCase()}</span>
+                <h2 id="qvTitle">${product.name || 'Furniture Item'}</h2>
+                <div class="qv-rating-bar">
+                  <span class="qv-stars">★★★★★</span>
+                  <span class="qv-rating-score" id="qvRating">${product.rating || '4.8'}</span>
+                  <span class="qv-reviews-count">(Verified Quality)</span>
+                </div>
+              </div>
+              <div class="qv-price-box">
+                <div class="qv-monthly-price">
+                  <span class="qv-price-val" id="qvPrice">${formatMoney(product.price)}</span>
+                  <span class="qv-price-unit">/ month</span>
+                </div>
+                <div class="qv-security-deposit" id="qvDeposit">100% Refundable Security Deposit: ${formatMoney(Math.round(product.price * 1.2))}</div>
+              </div>
+              <div class="qv-tenure-wrap">
+                <label>Select Rental Tenure & Discount:</label>
+                <div class="qv-tenure-pills">
+                  <button class="qv-pill" onclick="window.RentEaseChatbot.selectTenure(1, this)">1 Mo<small>Standard</small></button>
+                  <button class="qv-pill" onclick="window.RentEaseChatbot.selectTenure(3, this)">3 Mo<small>5% OFF</small></button>
+                  <button class="qv-pill" onclick="window.RentEaseChatbot.selectTenure(6, this)">6 Mo<small>15% OFF</small></button>
+                  <button class="qv-pill active" onclick="window.RentEaseChatbot.selectTenure(12, this)">12 Mo<small>25% OFF</small></button>
+                  <button class="qv-pill" onclick="window.RentEaseChatbot.selectTenure(24, this)">24 Mo<small>35% OFF</small></button>
+                </div>
+              </div>
+              <div class="qv-specs-grid">
+                <div class="qv-spec-item"><span class="label">📐 Dimensions:</span><span class="val" id="qvDimensions"></span></div>
+                <div class="qv-spec-item"><span class="label">🪵 Material:</span><span class="val" id="qvMaterial">${product.material || 'Premium Engineered Hardwood'}</span></div>
+                <div class="qv-spec-item"><span class="label">🎨 Color:</span><span class="val" id="qvColor">${product.color || 'Natural Finish'}</span></div>
+                <div class="qv-spec-item"><span class="label">🏠 Ideal Room:</span><span class="val" id="qvRoomSize">${(product.roomSize || 'MEDIUM').toUpperCase()} ROOM</span></div>
+              </div>
+              <div class="qv-cta-row" style="margin-top:20px; display:flex; gap:10px;">
+                <button class="primary full" id="qvAddToCartBtn" onclick="window.RentEaseChatbot.addActiveModalToCart()">+ Add to Cart & Rent Now</button>
+                <a href="/?product=${encodeURIComponent(product._id || product.id)}" class="ghost" style="padding:12px 18px; text-decoration:none; display:inline-flex; align-items:center; white-space:nowrap;">Catalog ↗</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+      });
+    } else {
+      const imgEl = modal.querySelector("#qvImage");
+      if (imgEl) imgEl.src = product.image || "";
+      const catEl = modal.querySelector("#qvCategory");
+      if (catEl) catEl.textContent = (product.category || "FURNITURE").toUpperCase();
+      const titleEl = modal.querySelector("#qvTitle");
+      if (titleEl) titleEl.textContent = product.name || "Furniture Item";
+      const ratingEl = modal.querySelector("#qvRating");
+      if (ratingEl) ratingEl.textContent = product.rating || "4.8";
+      const priceEl = modal.querySelector("#qvPrice");
+      if (priceEl) priceEl.textContent = formatMoney(product.price);
+      const depEl = modal.querySelector("#qvDeposit");
+      if (depEl) depEl.textContent = `100% Refundable Security Deposit: ${formatMoney(Math.round(product.price * 1.2))}`;
+      const matEl = modal.querySelector("#qvMaterial");
+      if (matEl) matEl.textContent = product.material || "Premium Engineered Hardwood";
+      const colorEl = modal.querySelector("#qvColor");
+      if (colorEl) colorEl.textContent = product.color || "Natural Finish";
+      const roomEl = modal.querySelector("#qvRoomSize");
+      if (roomEl) roomEl.textContent = (product.roomSize ? product.roomSize.toUpperCase() : "MEDIUM") + " ROOM";
+    }
+
+    const dimMap = {
+      sofa: `78" W × 35" D × 33" H (Seat H: 18")`,
+      bed: `82" L × 64" W × 42" H (Queen Standard)`,
+      chair: `24" W × 26" D × 38-44" H (Adjustable)`,
+      desk: `48" W × 24" D × 30" H`,
+      table: `54" L × 36" W × 30" H`,
+      wardrobe: `40" W × 22" D × 75" H`,
+      kids: `42" W × 28" D × 36" H (Child-Safe)`
+    };
+    const dimEl = modal.querySelector("#qvDimensions");
+    if (dimEl) dimEl.textContent = dimMap[product.category] || `45" W × 28" D × 32" H`;
+
+    updateModalPrice();
+    modal.classList.remove("hidden");
+  }
+
+  async function openProduct(productId) {
+    if (!productId || productId === "undefined" || productId === "null") {
+      showChatNotification("Product identifier is unavailable.", "error");
+      return;
+    }
+
+    try {
+      // 1. Fetch full product details from API
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}`);
+      if (!response.ok) throw new Error("Product not found");
+      const product = await response.json();
+
+      // 2. Open via available quick-view controller or standalone modal
+      if (typeof window.openProductQuickView === "function") {
+        await window.openProductQuickView(product);
+      } else if (typeof window.openRecommendedProduct === "function") {
+        await window.openRecommendedProduct(product._id || productId);
+      } else {
+        renderStandaloneModal(product);
+      }
+    } catch (error) {
+      console.warn("Unable to open recommended product:", error.message);
+      showChatNotification("Sorry, details for this product are currently unavailable.", "error");
+    }
+  }
+
+  function showChatNotification(text, type = "info") {
+    if (typeof window.showToast === "function") {
+      window.showToast(text);
+    }
+    const container = document.getElementById("chatbot-messages");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = type === "error" ? "chat-toast chat-toast-error" : "chat-toast";
+    toast.innerHTML = `<span>${type === "error" ? "⚠️" : "ℹ️"}</span> ${text}`;
+    container.appendChild(toast);
+    scrollToBottom();
+  }
+
   // Toggle chat window open/close
   function toggleChat(forceState) {
     const win = document.getElementById("chatbot-window");
@@ -493,6 +680,10 @@
       sendMessage(text);
     },
     handleAddToCart: handleAddToCart,
+    openProduct: openProduct,
+    closeModal: closeModal,
+    selectTenure: selectModalTenure,
+    addActiveModalToCart: addActiveModalToCart,
     clearChat: clearChat
   };
 

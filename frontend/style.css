@@ -119,6 +119,8 @@ button, a { cursor: pointer; }
 .ai-message { background: #eef3ef; border-radius: 16px; padding: 15px 18px; margin-bottom: 20px; }
 .ai-products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 .ai-mini { background: var(--bg); border-radius: 16px; padding: 14px; }
+.ai-recommendation-card { cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
+.ai-recommendation-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(31,75,63,.14); }
 .ai-mini img { width: 100%; height: 130px; object-fit: cover; border-radius: 12px; }
 .cart-section { background: #e8e1d3; }
 .cart-item {
@@ -368,7 +370,13 @@ button, a { cursor: pointer; }
 .empty-wishlist .primary { display: inline-block; }
 
 .modal {
-  position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 50;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: grid;
+  place-items: center;
+  z-index: 100050;
+  backdrop-filter: blur(4px);
 }
 .hidden { display: none !important; }
 .modal-card { width: min(420px, 90vw); background: white; border-radius: 24px; padding: 30px; position: relative; }
@@ -740,47 +748,83 @@ button, a { cursor: pointer; }
 
 .chat-product-card {
   background: #fdfdfd;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
 .chat-product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(31, 75, 63, 0.16);
+  border-color: var(--accent);
 }
 
 .card-img-wrap {
   position: relative;
   width: 100%;
-  height: 95px;
+  height: 105px;
   background: #ece7de;
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .card-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.chat-product-card:hover .card-img-wrap img {
+  transform: scale(1.04);
+}
+
+.card-quick-view-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 75, 63, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.chat-product-card:hover .card-quick-view-overlay {
+  opacity: 1;
 }
 
 .card-tag {
   position: absolute;
   top: 6px;
   left: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 2px 7px;
   border-radius: 6px;
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2;
 }
 
 .card-details {
-  padding: 8px 10px 10px;
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -788,14 +832,21 @@ button, a { cursor: pointer; }
 
 .card-details h6 {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--ink);
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.chat-product-card:hover .card-details h6 {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .card-price-row {
@@ -806,7 +857,7 @@ button, a { cursor: pointer; }
 }
 
 .card-price {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--accent);
 }
@@ -819,26 +870,59 @@ button, a { cursor: pointer; }
 
 .card-rating {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: #eab308;
 }
 
-.chat-add-btn {
-  width: 100%;
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 6px 8px;
+.chat-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.chat-view-btn {
+  flex: 1.1;
+  background: #f1f5f9;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 7px 6px;
   border-radius: 8px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: auto;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+}
+
+.chat-view-btn:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+.chat-add-btn {
+  flex: 1;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 7px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .chat-add-btn:hover {
   background: #183c32;
+}
+
+.chat-add-btn:active {
+  transform: scale(0.96);
 }
 
 /* Chat Toast */
@@ -864,6 +948,16 @@ button, a { cursor: pointer; }
   font-weight: 700;
   margin-left: auto;
   text-decoration: underline;
+}
+
+.chat-toast.chat-toast-error {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.chat-toast.chat-toast-error span {
+  color: #dc2626;
 }
 
 /* Quick Suggestion Chips */
@@ -3170,9 +3264,39 @@ button, a { cursor: pointer; }
   color: #f1f5f9;
 }
 
+[data-theme="dark"] .chat-product-card {
+  background: #131b2e;
+  border-color: #222f49;
+}
+
+[data-theme="dark"] .chat-product-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .chat-product-card .card-details h6 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .chat-view-btn {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .chat-view-btn:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
 /* ==========================================================================
    Interactive Product Quick-View & Specifications Modal
    ========================================================================== */
+#productQuickViewModal {
+  z-index: 100050 !important;
+}
+
 .quickview-modal-card {
   max-width: 960px;
   width: 94vw;

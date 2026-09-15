@@ -1,5 +1,12 @@
+const mongoose = require("mongoose");
 const OpenAI = require("openai");
 const fallbackProducts = require("../data/productsData");
+
+fallbackProducts.forEach((product, index) => {
+  if (!product._id) product._id = "66b8c9d0e1f2a3b4c5d6" + String(index + 1).padStart(4, "0");
+  if (!product.id) product.id = product._id;
+  if (!product.url) product.url = `/?product=${encodeURIComponent(product._id)}`;
+});
 
 // RentEase comprehensive knowledge base
 const KNOWLEDGE_BASE = {
@@ -50,12 +57,12 @@ function demoParse(message) {
 
   const categoryMap = [
     { cat: "kids", regex: /\b(kids?|child(ren)?|baby|babies|toddlers?|nursery|cribs?|bunk\s*beds?|toy\s*storage|play\s*table|fort|easel)\b/i },
-    { cat: "sofa", regex: /\b(sofas?|couches?|couch|seating|recliners?|loveseats?)\b/i },
-    { cat: "bed", regex: /\b(beds?|cots?|mattresses?|headboards?)\b/i },
-    { cat: "desk", regex: /\b(desks?|workstations?|study\s*(table|desk)|office\s*desk)\b/i },
-    { cat: "chair", regex: /\b(chairs?|stools?|armchairs?|office\s*chair)\b/i },
-    { cat: "table", regex: /\b(tables?|dining(\s*table)?|coffee\s*table|side\s*table|nightstands?)\b/i },
-    { cat: "wardrobe", regex: /\b(wardrobes?|closets?|cupboards?|almirahs?|armoires?)\b/i }
+    { cat: "sofa", regex: /\b(sofas?|couches?|couch|seating|recliners?|loveseats?|sectional|futon|settee)\b/i },
+    { cat: "bed", regex: /\b(beds?|cots?|mattresses?|headboards?|king\s*bed|queen\s*bed|single\s*bed)\b/i },
+    { cat: "desk", regex: /\b(desks?|workstations?|study\s*(table|desk)|office\s*desk|standing\s*desk|computer\s*table)\b/i },
+    { cat: "chair", regex: /\b(chairs?|stools?|armchairs?|office\s*chair|ergonomic\s*chair|dining\s*chair|desk\s*chair|recliners?)\b/i },
+    { cat: "table", regex: /\b(tables?|dining(\s*table)?|coffee\s*table|side\s*table|nightstands?|center\s*table)\b/i },
+    { cat: "wardrobe", regex: /\b(wardrobes?|closets?|cupboards?|almirahs?|armoires?|cabinets?)\b/i }
   ];
 
   let category = null;
@@ -66,12 +73,26 @@ function demoParse(message) {
     }
   }
 
-  const priceMatches = text.replace(/,/g, "").match(/(?:₹|rs\.?|inr)?\s*(\d{3,7})/i);
+  // 1. Check for '20k', '20 k', '15.5k' formats
+  const kMatches = text.match(/(?:under|below|less\s+than|within|upto|up\s+to|max(?:imum)?|budget(?:\s+of)?|around|about)?\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*k\b/i);
   let maxPrice = null;
 
-  if (priceMatches) {
-    const number = Number(priceMatches[1]);
-    if (number >= 500) maxPrice = number;
+  if (kMatches) {
+    const kNum = Number(kMatches[1]);
+    if (kNum > 0) maxPrice = Math.round(kNum * 1000);
+  }
+
+  // 2. Check for standard numeric price (e.g. '20000', '20,000', '₹20,000')
+  if (!maxPrice) {
+    const cleanText = text.replace(/,/g, "");
+    const priceMatches = cleanText.match(/(?:under|below|less\s+than|within|upto|up\s+to|max(?:imum)?|budget(?:\s+of)?|around|about|price\s*[:=]?)\s*(?:₹|rs\.?|inr)?\s*(\d{3,7})/i) ||
+                         cleanText.match(/(?:₹|rs\.?|inr)\s*(\d{3,7})/i) ||
+                         cleanText.match(/\b(\d{4,7})\b/i);
+
+    if (priceMatches) {
+      const number = Number(priceMatches[1]);
+      if (number >= 500) maxPrice = number;
+    }
   }
 
   let roomSize = null;
@@ -187,36 +208,75 @@ async function processChatMessage({ message, history = [], ProductModel }) {
     lower.includes("looking for") || lower.includes("furniture") || lower.includes("cheap") || lower.includes("budget") ||
     lower.includes("options") || lower.includes("item") || lower.includes("available");
 
-  if (hasFurnitureIntent && ProductModel) {
+  if (hasFurnitureIntent) {
+    const isDbReady = ProductModel && mongoose.connection && mongoose.connection.readyState === 1;
     const query = { available: true };
     if (matchedFilters.category) query.category = matchedFilters.category;
     if (matchedFilters.maxPrice) query.price = { $lte: matchedFilters.maxPrice };
     if (matchedFilters.roomSize) query.roomSize = matchedFilters.roomSize;
 
-    try {
-      products = await ProductModel.find(query).sort({ rating: -1, price: 1 }).limit(4);
+    if (isDbReady) {
+      try {
+        products = await ProductModel.find(query).sort({ rating: -1, price: 1 }).limit(4);
 
-      // If strict filter yielded 0 results, relax the query slightly
-      if (products.length === 0 && matchedFilters.category) {
-        products = await ProductModel.find({ category: matchedFilters.category, available: true }).limit(3);
+        // If strict filter yielded 0 results, relax roomSize while keeping category and budget
+        if (products.length === 0 && matchedFilters.category && matchedFilters.maxPrice) {
+          products = await ProductModel.find({
+            category: matchedFilters.category,
+            price: { $lte: matchedFilters.maxPrice },
+            available: true
+          }).sort({ rating: -1, price: 1 }).limit(4);
+        }
+
+        // If still 0, relax budget to show closest options in category
+        if (products.length === 0 && matchedFilters.category) {
+          products = await ProductModel.find({ category: matchedFilters.category, available: true }).sort({ price: 1 }).limit(4);
+        }
+      } catch (dbErr) {
+        console.warn("DB Query error, using in-memory catalog:", dbErr.message);
       }
-    } catch (dbErr) {
-      console.warn("DB Query error, using in-memory catalog:", dbErr.message);
     }
 
     if (!products || products.length === 0) {
       // In-memory fallback
       products = fallbackProducts.filter(p => {
         if (matchedFilters.category && p.category !== matchedFilters.category) return false;
-        if (matchedFilters.maxPrice && p.price > matchedFilters.maxPrice) return false;
+        if (matchedFilters.maxPrice && Number(p.price) > Number(matchedFilters.maxPrice)) return false;
         if (matchedFilters.roomSize && p.roomSize !== matchedFilters.roomSize) return false;
         return true;
       }).slice(0, 4);
 
+      // Relax roomSize if 0 results
+      if (products.length === 0 && matchedFilters.category && matchedFilters.maxPrice) {
+        products = fallbackProducts.filter(p => p.category === matchedFilters.category && Number(p.price) <= Number(matchedFilters.maxPrice)).slice(0, 4);
+      }
+
+      // Relax price if 0 results
       if (products.length === 0 && matchedFilters.category) {
-        products = fallbackProducts.filter(p => p.category === matchedFilters.category).slice(0, 3);
+        products = fallbackProducts.filter(p => p.category === matchedFilters.category).slice(0, 4);
       }
     }
+
+    // Normalize products so every product has a valid string ID, link, and metadata
+    products = products.map((p, idx) => {
+      const prodObj = p.toObject ? p.toObject() : { ...p };
+      const validId = String(prodObj._id || prodObj.id || `66b8c9d0e1f2a3b4c5d6${String(idx + 1).padStart(4, "0")}`);
+      return {
+        ...prodObj,
+        _id: validId,
+        id: validId,
+        name: prodObj.name || "Furniture Item",
+        category: prodObj.category || (matchedFilters.category || "furniture"),
+        price: Number(prodObj.price) || 999,
+        rating: Number(prodObj.rating) || 4.8,
+        image: prodObj.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=80",
+        material: prodObj.material || "Premium Engineered Wood",
+        color: prodObj.color || "Natural Finish",
+        roomSize: prodObj.roomSize || "medium",
+        description: prodObj.description || "Premium quality furniture available for flexible monthly rental with doorstep delivery.",
+        url: `/?product=${encodeURIComponent(validId)}`
+      };
+    });
 
     if (products.length > 0) {
       const catLabel = matchedFilters.category ? `${matchedFilters.category}` : "furniture";
@@ -224,11 +284,12 @@ async function processChatMessage({ message, history = [], ProductModel }) {
       const priceLabel = matchedFilters.maxPrice ? ` within **₹${matchedFilters.maxPrice.toLocaleString('en-IN')}**` : "";
       
       const recIntro = `Here are the top rated **${catLabel}** options${sizeLabel}${priceLabel} currently available in our catalog:`;
+      const clickTip = `\n\n*💡 Click any product card, image, or name to view complete specifications, dimensions, and rental tenures.*`;
       
       if (replyText) {
-        replyText += `\n\n---\n\n${recIntro}`;
+        replyText += `\n\n---\n\n${recIntro}${clickTip}`;
       } else {
-        replyText = `✦ **Furniture Recommendations**\n\n${recIntro}\n\n*Click **Add to Cart** on any card to add it to your order immediately.*`;
+        replyText = `✦ **Furniture Recommendations**\n\n${recIntro}${clickTip}`;
       }
 
       suggestions = [
@@ -377,22 +438,45 @@ async function analyzeRoomScan({ imageData, roomTypeHint, spaceSizeHint, Product
 
   // Retrieve matching products from database
   let recommendedProducts = [];
-  try {
-    if (ProductModel) {
+  const isDbReady = ProductModel && mongoose.connection && mongoose.connection.readyState === 1;
+
+  if (isDbReady) {
+    try {
       recommendedProducts = await ProductModel.find({
         category: { $in: archetype.categories },
         available: true
       })
       .sort({ rating: -1, price: 1 })
       .limit(6);
+    } catch (err) {
+      console.warn("Room scan product fetch error, using in-memory catalog:", err.message);
     }
-  } catch (err) {
-    console.warn("Room scan product fetch error, using in-memory catalog:", err.message);
   }
 
   if (!recommendedProducts || recommendedProducts.length === 0) {
     recommendedProducts = fallbackProducts.filter(p => archetype.categories.includes(p.category)).slice(0, 6);
   }
+
+  // Ensure every product has clean string ID, link, and metadata
+  recommendedProducts = recommendedProducts.map((p, idx) => {
+    const prodObj = p.toObject ? p.toObject() : { ...p };
+    const validId = String(prodObj._id || prodObj.id || `66b8c9d0e1f2a3b4c5d6${String(idx + 1).padStart(4, "0")}`);
+    return {
+      ...prodObj,
+      _id: validId,
+      id: validId,
+      name: prodObj.name || "Furniture Item",
+      category: prodObj.category || "furniture",
+      price: Number(prodObj.price) || 999,
+      rating: Number(prodObj.rating) || 4.8,
+      image: prodObj.image || "",
+      material: prodObj.material || "Premium",
+      color: prodObj.color || "Natural Finish",
+      roomSize: prodObj.roomSize || "medium",
+      description: prodObj.description || "",
+      url: `/?product=${encodeURIComponent(validId)}`
+    };
+  });
 
   return {
     success: true,

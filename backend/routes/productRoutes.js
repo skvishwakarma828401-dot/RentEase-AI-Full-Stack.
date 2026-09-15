@@ -2,6 +2,10 @@ const router = require("express").Router();
 const Product = require("../models/Product");
 const fallbackProducts = require("../data/productsData");
 
+fallbackProducts.forEach((product, index) => {
+  if (!product._id) product._id = `fallback-${index + 1}`;
+});
+
 // GET all products (with Search, Category, and Price filtering)
 router.get("/", async (req, res) => {
   try {
@@ -69,12 +73,14 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    const found = fallbackProducts.find(p => String(p._id) === String(req.params.id));
+    const idParam = String(req.params.id);
+    const found = fallbackProducts.find(p => String(p._id) === idParam || String(p.id) === idParam);
     if (found) return res.json(found);
 
     res.status(404).json({ message: "Product not found" });
   } catch (error) {
-    const found = fallbackProducts.find(p => String(p._id) === String(req.params.id));
+    const idParam = String(req.params.id);
+    const found = fallbackProducts.find(p => String(p._id) === idParam || String(p.id) === idParam);
     if (found) return res.json(found);
     res.status(400).json({ message: "Invalid product id" });
   }
